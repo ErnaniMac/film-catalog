@@ -35,8 +35,10 @@ class TmdbController extends Controller
         $cacheKey = "tmdb_search_{$query}_page_{$page}";
 
         $response = Cache::remember($cacheKey, 3600, function () use ($apiUrl, $apiKey, $query, $page) {
-            return Http::get("{$apiUrl}/search/movie", [
-                'api_key' => $apiKey,
+            return Http::withHeaders([
+                'Authorization' => "Bearer {$apiKey}",
+                'Accept' => 'application/json',
+            ])->get("{$apiUrl}/search/movie", [
                 'query' => $query,
                 'page' => $page,
                 'language' => 'pt-BR',
