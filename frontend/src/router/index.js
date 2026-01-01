@@ -36,8 +36,18 @@ const router = createRouter({
   ]
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
+  
+  // Se tem token mas não tem usuário, buscar usuário
+  if (authStore.token && !authStore.user) {
+    try {
+      await authStore.fetchUser()
+    } catch (error) {
+      // Se falhar, limpar token
+      authStore.logout()
+    }
+  }
   
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next({ name: 'login' })

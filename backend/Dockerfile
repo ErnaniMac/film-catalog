@@ -1,4 +1,4 @@
-FROM php:8.1-fpm
+FROM php:8.1-cli
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -32,3 +32,6 @@ USER www-data
 
 # Expose port 8000
 EXPOSE 8000
+
+# Start PHP development server
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]

@@ -14,8 +14,6 @@
     "axios": "^1.6.2",
     "primevue": "^3.50.0",
     "primeicons": "^6.0.1",
-    "vee-validate": "^4.12.0",
-    "yup": "^1.3.3",
     "dayjs": "^1.11.10",
     "lodash": "^4.17.21"
   },
