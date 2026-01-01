@@ -1,0 +1,83 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: film-catalog-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: film_catalog
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_PASSWORD: password
+      MYSQL_USER: film_user
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - film-network
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: film-catalog-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - film-network
+
+  # Laravel Backend
+  laravel:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: film-catalog-laravel
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./backend:/var/www/html
+      - ./backend/storage:/var/www/html/storage
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mysql
+      - redis
+    environment:
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: film_catalog
+      DB_USERNAME: film_user
+      DB_PASSWORD: password
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    networks:
+      - film-network
+
+  # Node.js Frontend
+  node:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: film-catalog-node
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    depends_on:
+      - laravel
+    networks:
+      - film-network
+
+volumes:
+  mysql_data:
+
+networks:
+  film-network:
+    driver: bridge
+
