@@ -1,0 +1,399 @@
+# Cursor Rules - Film Catalog Project
+
+## Visão Geral do Projeto
+
+Este é um projeto full-stack com:
+- **Backend**: Laravel (PHP 7.4+) em `/backend`
+- **Frontend**: Vue 3 + Vite em `/frontend`
+- **Arquitetura**: Monorepo com backend e frontend separados no mesmo repositório Git
+- **Comunicação**: API REST entre frontend e backend
+- **Containerização**: Docker Compose para desenvolvimento
+
+---
+
+## Estrutura do Projeto
+
+```
+film-catalog/
+├── backend/          # Aplicação Laravel
+│   ├── app/
+│   ├── config/
+│   ├── database/
+│   ├── routes/
+│   └── tests/
+├── frontend/         # Aplicação Vue 3 SPA
+│   ├── src/
+│   ├── public/
+│   └── package.json
+├── docker-compose.yml
+└── README.md
+```
+
+**IMPORTANTE**: Sempre respeite a separação entre `/backend` e `/frontend`. Nunca misture código PHP com código JavaScript/Vue.
+
+---
+
+## Backend - Laravel
+
+### Versão e Requisitos
+- PHP 7.4 ou superior
+- Laravel 8.x ou superior
+- MySQL para banco de dados
+- Redis para cache/sessões (opcional)
+
+### Pacotes Principais
+- `laravel/sanctum` - Autenticação API
+- `spatie/laravel-permission` - Roles e permissões
+- `predis/predis` - Cliente Redis
+
+### Convenções de Código
+
+#### Controllers
+- Use **Resource Controllers** quando apropriado
+- Sempre use **FormRequest** para validação (não valide diretamente no controller)
+- Retorne respostas JSON consistentes:
+  ```php
+  return response()->json(['data' => $resource], 200);
+  return response()->json(['message' => 'Success'], 201);
+  return response()->json(['error' => 'Message'], 400);
+  ```
+- Use **type-hinting** para todos os parâmetros e retornos
+- Injeção de dependência via construtor quando possível
+
+#### Models
+- Use **Eloquent Relationships** apropriadas (hasMany, belongsTo, etc.)
+- Implemente traits do Spatie Permission: `use HasRoles;`
+- Defina `$fillable` ou `$guarded` explicitamente
+- Use **Accessors/Mutators** quando necessário
+- Sempre defina `$casts` para tipos de dados
+
+#### Migrations
+- Nomes descritivos: `create_favorites_table`, `add_role_id_to_users_table`
+- Use `timestamps()` quando apropriado
+- Defina índices para campos de busca frequente
+- Use `foreignId()` para relacionamentos
+
+#### Routes
+- Todas as rotas da API em `routes/api.php`
+- Use **Route Groups** com middleware:
+  ```php
+  Route::middleware('auth:sanctum')->group(function () {
+      // rotas protegidas
+  });
+  ```
+- Use **Resource Routes** quando aplicável:
+  ```php
+  Route::apiResource('users', UserController::class);
+  ```
+
+#### Form Requests
+- Crie FormRequests para validação complexa
+- Retorne mensagens de erro em português quando apropriado
+- Use regras de validação do Laravel
+
+#### Services
+- Use **Service Classes** para lógica de negócio complexa
+- Mantenha controllers leves, delegue lógica para services
+- Exemplo: `TmdbService` para integração com TMDB API
+
+#### Exceptions
+- Use **Custom Exceptions** quando apropriado
+- Sempre retorne erros em formato JSON consistente
+
+### Autenticação
+- Use **Laravel Sanctum** para autenticação API
+- Tokens devem ser enviados via header: `Authorization: Bearer {token}`
+- Implemente refresh token se necessário
+- Proteja rotas com middleware `auth:sanctum`
+
+### Roles e Permissões
+- Use **Spatie Laravel Permission**
+- Defina roles e permissões via seeders
+- Use middleware `role:` ou `permission:` nas rotas
+- Exemplo: `Route::middleware(['auth:sanctum', 'role:admin'])->group(...)`
+
+### Testes
+- Use **PHPUnit** para testes unitários e de integração
+- Teste controllers, models, services e features
+- Use **Factories** para criar dados de teste
+- Mantenha cobertura de código alta (>80%)
+
+### API Responses
+- Sempre retorne JSON
+- Use status codes HTTP apropriados:
+  - `200` - Sucesso (GET, PUT, PATCH)
+  - `201` - Criado (POST)
+  - `204` - Sem conteúdo (DELETE)
+  - `400` - Requisição inválida
+  - `401` - Não autenticado
+  - `403` - Não autorizado
+  - `404` - Não encontrado
+  - `422` - Erro de validação
+  - `500` - Erro interno
+
+### Integração TMDB
+- Use **HTTP Client** do Laravel para chamadas à API TMDB
+- Armazene API key em `.env` como `TMDB_API_KEY`
+- Implemente cache para reduzir chamadas à API externa
+- Trate erros de API externa adequadamente
+
+---
+
+## Frontend - Vue 3
+
+### Stack Tecnológica
+- **Vue 3** com Composition API
+- **Vite** como build tool
+- **Pinia** para gerenciamento de estado
+- **Vue Router** para roteamento
+- **Axios** para requisições HTTP
+- **PrimeVue** para componentes UI
+- **vee-validate** + **yup** para validação
+- **dayjs** para manipulação de datas
+- **lodash** para utilitários
+
+### Convenções de Código
+
+#### Estrutura de Componentes
+- Use **Composition API** com `<script setup>`
+- Organize componentes por feature:
+  ```
+  src/
+  ├── components/
+  │   ├── common/        # Componentes reutilizáveis
+  │   ├── films/         # Componentes de filmes
+  │   ├── favorites/     # Componentes de favoritos
+  │   └── admin/         # Componentes admin
+  ├── views/
+  ├── stores/            # Pinia stores
+  ├── composables/       # Composables reutilizáveis
+  └── utils/
+  ```
+
+#### Componentes
+- Use **Single File Components** (.vue)
+- Nomes de componentes em **PascalCase**
+- Props com type definition e validação
+- Emit events com nomes descritivos
+- Use `<script setup>` sempre que possível
+
+#### Composables
+- Crie composables para lógica reutilizável
+- Exemplo: `useAuth.js`, `useApi.js`, `useTmdb.js`
+- Retorne objetos reativos quando necessário
+
+#### Pinia Stores
+- Organize stores por domínio: `authStore`, `filmStore`, `favoriteStore`
+- Use **Actions** para operações assíncronas
+- Use **Getters** para dados computados
+- Mantenha stores focadas e pequenas
+
+#### Vue Router
+- Use **lazy loading** para rotas:
+  ```js
+  {
+    path: '/admin',
+    component: () => import('@/views/Admin.vue')
+  }
+  ```
+- Implemente **route guards** para autenticação
+- Use **meta fields** para permissões
+
+#### Requisições HTTP
+- Configure **Axios** com base URL da API Laravel
+- Use **interceptors** para:
+  - Adicionar token de autenticação
+  - Tratar erros globalmente
+  - Mostrar loading states
+- Centralize chamadas de API em services/composables
+
+#### Validação de Formulários
+- Use **vee-validate** com **yup** schemas
+- Valide no frontend, mas sempre confie na validação do backend
+- Mostre mensagens de erro claras e em português
+
+#### UI Components (PrimeVue)
+- Use componentes do PrimeVue consistentemente
+- Customize temas quando necessário
+- Mantenha design system consistente
+
+#### Estado Global
+- Use **Pinia** para estado compartilhado
+- Evite prop drilling excessivo
+- Use `provide/inject` para casos específicos
+
+### Autenticação Frontend
+- Armazene token em **localStorage** ou **cookie** (preferir httpOnly cookie se possível)
+- Implemente **refresh token** logic
+- Redirecione para login quando token expirar
+- Use composable `useAuth` para lógica de autenticação
+
+### Tratamento de Erros
+- Capture erros de API globalmente
+- Mostre mensagens de erro amigáveis ao usuário
+- Use toast notifications (PrimeVue Toast) para feedback
+- Log erros para debugging em desenvolvimento
+
+### Performance
+- Use **lazy loading** para rotas e componentes grandes
+- Implemente **code splitting** com Vite
+- Use **v-memo** para listas grandes quando apropriado
+- Otimize imagens e assets
+
+---
+
+## Docker
+
+### Estrutura
+- Use `docker-compose.yml` na raiz do projeto
+- Separe serviços: `laravel`, `mysql`, `node` (para frontend)
+- Configure volumes para persistência
+- Use `.env` para configurações
+
+### Boas Práticas
+- Não commite `.env` files
+- Use `.env.example` como template
+- Configure networks apropriadamente
+- Exponha apenas portas necessárias
+
+---
+
+## Convenções de Commits
+
+Use **Conventional Commits**:
+
+- `feat:` - Nova funcionalidade
+- `fix:` - Correção de bug
+- `docs:` - Documentação
+- `style:` - Formatação, ponto e vírgula faltando, etc.
+- `refactor:` - Refatoração de código
+- `test:` - Adicionar ou corrigir testes
+- `chore:` - Tarefas de build, configuração, etc.
+
+Exemplos:
+```
+feat: adiciona busca de filmes na API TMDB
+fix: corrige validação de email no cadastro
+docs: atualiza README com instruções Docker
+refactor: reorganiza estrutura de stores Pinia
+test: adiciona testes para FavoriteController
+```
+
+---
+
+## Boas Práticas Gerais
+
+### Código
+- **Sempre** escreva código limpo e legível
+- Use nomes descritivos para variáveis, funções e classes
+- Comente código complexo, mas evite comentários óbvios
+- Mantenha funções/métodos pequenos e focados
+- Evite código duplicado (DRY - Don't Repeat Yourself)
+- Use **SOLID principles** quando apropriado
+
+### Segurança
+- **Nunca** commite credenciais ou API keys
+- Use `.env` para configurações sensíveis
+- Valide e sanitize todas as entradas do usuário
+- Use prepared statements (Eloquent já faz isso)
+- Implemente rate limiting quando necessário
+- Use HTTPS em produção
+
+### Performance
+- Use cache quando apropriado (Redis, Laravel Cache)
+- Otimize queries do banco (use Eager Loading)
+- Implemente paginação para listas grandes
+- Use lazy loading no frontend
+- Minifique assets em produção
+
+### Documentação
+- Mantenha README.md atualizado
+- Documente APIs complexas
+- Use PHPDoc para métodos públicos
+- Comente decisões arquiteturais importantes
+
+### Git
+- Faça commits frequentes e atômicos
+- Use branches para features (`feature/nome-feature`)
+- Escreva mensagens de commit claras
+- Nunca commite arquivos gerados ou temporários
+
+---
+
+## Regras Específicas
+
+### Ao Criar Novos Arquivos
+1. **Backend**: Sempre crie testes correspondentes
+2. **Frontend**: Mantenha componentes pequenos e focados
+3. **Ambos**: Siga a estrutura de pastas estabelecida
+
+### Ao Modificar Código Existente
+1. Mantenha compatibilidade com código existente
+2. Atualize testes se necessário
+3. Verifique se não quebrou funcionalidades relacionadas
+
+### Ao Trabalhar com API
+1. Sempre valide dados no backend
+2. Trate erros adequadamente no frontend
+3. Use status codes HTTP corretos
+4. Documente endpoints novos
+
+### Ao Trabalhar com Banco de Dados
+1. Use migrations para todas as mudanças de schema
+2. Crie seeders para dados iniciais
+3. Use factories para testes
+4. Nunca modifique migrations já commitadas (crie novas)
+
+---
+
+## Comandos Úteis
+
+### Backend (Laravel)
+```bash
+php artisan migrate
+php artisan migrate:fresh --seed
+php artisan test
+php artisan make:controller ControllerName
+php artisan make:model ModelName -m
+php artisan make:request RequestName
+```
+
+### Frontend (Vue)
+```bash
+npm run dev          # Desenvolvimento
+npm run build        # Build produção
+npm run test         # Testes
+```
+
+### Docker
+```bash
+docker-compose up -d
+docker-compose down
+docker-compose exec laravel php artisan migrate
+```
+
+---
+
+## Checklist Antes de Commitar
+
+- [ ] Código segue as convenções estabelecidas
+- [ ] Testes passam (backend e frontend)
+- [ ] Não há console.log ou var_dump esquecidos
+- [ ] Variáveis de ambiente não foram commitadas
+- [ ] Mensagem de commit segue o padrão
+- [ ] Documentação atualizada se necessário
+- [ ] Código foi revisado
+
+---
+
+## Notas Finais
+
+- **Sempre** priorize código limpo e manutenível
+- **Sempre** escreva testes para funcionalidades críticas
+- **Sempre** valide dados no backend
+- **Nunca** confie apenas na validação do frontend
+- **Sempre** trate erros adequadamente
+- **Sempre** documente decisões importantes
+
+Este arquivo deve ser atualizado conforme o projeto evolui e novas convenções são estabelecidas.
+
