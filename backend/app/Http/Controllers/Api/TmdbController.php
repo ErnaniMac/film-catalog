@@ -37,25 +37,29 @@ class TmdbController extends Controller
 
         try {
             $data = Cache::remember($cacheKey, 3600, function () use ($apiUrl, $apiKey, $query, $page) {
-                $httpResponse = Http::timeout(10)->withHeaders([
-                    'Authorization' => "Bearer {$apiKey}",
-                    'Accept' => 'application/json',
-                ])->get("{$apiUrl}/search/movie", [
-                    'query' => $query,
-                    'page' => $page,
-                    'language' => 'pt-BR',
-                    'include_adult' => false,
-                ]);
+                try {
+                    $httpResponse = Http::timeout(10)->withHeaders([
+                        'Authorization' => "Bearer {$apiKey}",
+                        'Accept' => 'application/json',
+                    ])->get("{$apiUrl}/search/movie", [
+                        'query' => $query,
+                        'page' => $page,
+                        'language' => 'pt-BR',
+                        'include_adult' => false,
+                    ]);
 
-                // Verificar se a resposta foi bem-sucedida
-                $statusCode = $httpResponse->getStatusCode();
-                if ($statusCode >= 400) {
-                    throw new \Exception('TMDB API request failed with status: ' . $statusCode);
+                    // Usar throw() para lançar exceção automaticamente em caso de erro HTTP
+                    $httpResponse->throw();
+                    
+                    // Retornar os dados JSON
+                    return $httpResponse->json();
+                } catch (\Illuminate\Http\Client\RequestException $e) {
+                    // Se for rate limit (429), relançar com mensagem específica
+                    if ($e->response && $e->response->status() === 429) {
+                        throw new \Exception('Rate limit excedido. O TMDB permite 40 requisições por 10 segundos.');
+                    }
+                    throw $e;
                 }
-
-                // Retornar apenas os dados JSON
-                $jsonData = $httpResponse->getBody()->getContents();
-                return json_decode($jsonData, true);
             });
 
             // Verificar se há resultados válidos - não cachear resultados vazios incorretos
