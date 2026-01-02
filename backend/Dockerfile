@@ -1,4 +1,4 @@
-FROM php:8.1-cli
+FROM php:8.4-fpm
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -10,10 +10,9 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip \
     nodejs \
-    npm
-
-# Clear cache
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+    npm \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
@@ -27,11 +26,12 @@ WORKDIR /var/www/html
 # Copy existing application directory permissions
 RUN chown -R www-data:www-data /var/www/html
 
-# Change current user to www-data
-USER www-data
+# Configure PHP-FPM
+RUN sed -i 's/listen = .*/listen = 0.0.0.0:9000/' /usr/local/etc/php-fpm.d/www.conf \
+    && sed -i 's/;clear_env = no/clear_env = no/' /usr/local/etc/php-fpm.d/www.conf
 
-# Expose port 8000
-EXPOSE 8000
+# Expose port 9000 (PHP-FPM)
+EXPOSE 9000
 
-# Start PHP development server
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+# Start PHP-FPM
+CMD ["php-fpm"]
