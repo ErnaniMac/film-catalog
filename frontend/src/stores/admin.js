@@ -65,15 +65,23 @@ export const useAdminStore = defineStore('admin', () => {
   async function fetchRoles() {
     try {
       const response = await api.get('/roles')
-      // A API retorna { data: [...] } ou [...] diretamente
-      const data = response.data?.data || response.data
-      roles.value = Array.isArray(data) ? data : []
-      console.log('Roles carregadas:', roles.value.length)
+      console.log('Roles API Response completa:', response)
+      console.log('Roles response.data:', response.data)
+      // A API retorna { data: [...] }
+      const data = response.data?.data
+      if (Array.isArray(data)) {
+        roles.value = data
+        console.log('Roles atribuídas com sucesso:', roles.value.length, 'items')
+      } else {
+        console.warn('Roles: dados não são um array:', data)
+        roles.value = []
+      }
     } catch (error) {
       console.error('Erro ao buscar roles:', error)
       if (error.response) {
         console.error('Status:', error.response.status)
         console.error('Data:', error.response.data)
+        console.error('Headers:', error.response.headers)
       }
       roles.value = []
       throw error
@@ -123,15 +131,23 @@ export const useAdminStore = defineStore('admin', () => {
   async function fetchPermissions() {
     try {
       const response = await api.get('/permissions')
-      // A API retorna { data: [...] } ou [...] diretamente
-      const data = response.data?.data || response.data
-      permissions.value = Array.isArray(data) ? data : []
-      console.log('Permissões carregadas:', permissions.value.length)
+      console.log('Permissions API Response completa:', response)
+      console.log('Permissions response.data:', response.data)
+      // A API retorna { data: [...] }
+      const data = response.data?.data
+      if (Array.isArray(data)) {
+        permissions.value = data
+        console.log('Permissões atribuídas com sucesso:', permissions.value.length, 'items')
+      } else {
+        console.warn('Permissions: dados não são um array:', data)
+        permissions.value = []
+      }
     } catch (error) {
       console.error('Erro ao buscar permissões:', error)
       if (error.response) {
         console.error('Status:', error.response.status)
         console.error('Data:', error.response.data)
+        console.error('Headers:', error.response.headers)
       }
       permissions.value = []
       throw error

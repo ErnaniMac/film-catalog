@@ -321,13 +321,23 @@ onMounted(async () => {
   permissionsLoading.value = true
   
   try {
-    await Promise.all([
-      adminStore.fetchUsers(),
-      adminStore.fetchRoles().finally(() => { rolesLoading.value = false }),
-      adminStore.fetchPermissions().finally(() => { permissionsLoading.value = false })
-    ])
+    await adminStore.fetchUsers()
+    await adminStore.fetchRoles()
+    await adminStore.fetchPermissions()
+    
+    console.log('Dados carregados:')
+    console.log('Users:', adminStore.users.length)
+    console.log('Roles:', adminStore.roles.length)
+    console.log('Permissions:', adminStore.permissions.length)
   } catch (error) {
     console.error('Erro ao carregar dados:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Erro',
+      detail: 'Erro ao carregar dados. Verifique o console.',
+      life: 5000
+    })
+  } finally {
     rolesLoading.value = false
     permissionsLoading.value = false
   }
