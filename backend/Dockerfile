@@ -35,13 +35,17 @@ set -e\n\
 \n\
 # Fix permissions for storage and bootstrap/cache\n\
 if [ -d "/var/www/html/storage" ]; then\n\
-    chown -R www-data:www-data /var/www/html/storage\n\
+    chown -R www-data:www-data /var/www/html/storage 2>/dev/null || true\n\
     chmod -R 775 /var/www/html/storage\n\
+    find /var/www/html/storage -type d -exec chmod 775 {} \\;\n\
+    find /var/www/html/storage -type f -exec chmod 664 {} \\;\n\
 fi\n\
 \n\
 if [ -d "/var/www/html/bootstrap/cache" ]; then\n\
-    chown -R www-data:www-data /var/www/html/bootstrap/cache\n\
+    chown -R www-data:www-data /var/www/html/bootstrap/cache 2>/dev/null || true\n\
     chmod -R 775 /var/www/html/bootstrap/cache\n\
+    find /var/www/html/bootstrap/cache -type d -exec chmod 775 {} \\;\n\
+    find /var/www/html/bootstrap/cache -type f -exec chmod 664 {} \\;\n\
 fi\n\
 \n\
 # Execute original command\n\
