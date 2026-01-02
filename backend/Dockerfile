@@ -31,14 +31,12 @@ RUN groupadd -g ${GROUP_ID} appuser || true \
 # Set working directory
 WORKDIR /var/www/html
 
-# Configure PHP-FPM to use appuser and fix error_log
+# Configure PHP-FPM to use appuser
+# Note: error_log is configured in php-fpm.conf, not in pool config
 RUN sed -i 's/listen = .*/listen = 0.0.0.0:9000/' /usr/local/etc/php-fpm.d/www.conf \
     && sed -i 's/;clear_env = no/clear_env = no/' /usr/local/etc/php-fpm.d/www.conf \
     && sed -i "s/user = www-data/user = appuser/" /usr/local/etc/php-fpm.d/www.conf \
-    && sed -i "s/group = www-data/group = appuser/" /usr/local/etc/php-fpm.d/www.conf \
-    && sed -i '/^error_log/d' /usr/local/etc/php-fpm.d/www.conf \
-    && sed -i '/^;error_log/d' /usr/local/etc/php-fpm.d/www.conf \
-    && echo "error_log = /var/www/html/storage/logs/php-fpm.log" >> /usr/local/etc/php-fpm.d/www.conf
+    && sed -i "s/group = www-data/group = appuser/" /usr/local/etc/php-fpm.d/www.conf
 
 # Create entrypoint script to fix permissions and ownership
 # Container runs as root, entrypoint fixes permissions then switches to appuser
@@ -64,10 +62,6 @@ if [ -d "/var/www/html" ]; then\n\
         find /var/www/html/bootstrap/cache -type d -exec chmod 775 {} \\; 2>/dev/null || true\n\
         find /var/www/html/bootstrap/cache -type f -exec chmod 664 {} \\; 2>/dev/null || true\n\
         \n\
-        # Ensure php-fpm.log file exists and is writable\n\
-        touch /var/www/html/storage/logs/php-fpm.log 2>/dev/null || true\n\
-        chown appuser:appuser /var/www/html/storage/logs/php-fpm.log 2>/dev/null || true\n\
-        chmod 664 /var/www/html/storage/logs/php-fpm.log 2>/dev/null || true\n\
     fi\n\
 fi\n\
 \n\
