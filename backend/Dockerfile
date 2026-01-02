@@ -32,11 +32,13 @@ RUN groupadd -g ${GROUP_ID} appuser || true \
 WORKDIR /var/www/html
 
 # Configure PHP-FPM to use appuser
-# Note: error_log is configured in php-fpm.conf, not in pool config
+# Configure error_log in php-fpm.conf (main config, not pool)
 RUN sed -i 's/listen = .*/listen = 0.0.0.0:9000/' /usr/local/etc/php-fpm.d/www.conf \
     && sed -i 's/;clear_env = no/clear_env = no/' /usr/local/etc/php-fpm.d/www.conf \
     && sed -i "s/user = www-data/user = appuser/" /usr/local/etc/php-fpm.d/www.conf \
-    && sed -i "s/group = www-data/group = appuser/" /usr/local/etc/php-fpm.d/www.conf
+    && sed -i "s/group = www-data/group = appuser/" /usr/local/etc/php-fpm.d/www.conf \
+    && sed -i 's|^;error_log =.*|error_log = /var/www/html/storage/logs/php-fpm.log|' /usr/local/etc/php-fpm.conf \
+    && sed -i 's|^error_log =.*|error_log = /var/www/html/storage/logs/php-fpm.log|' /usr/local/etc/php-fpm.conf
 
 # Create entrypoint script to fix permissions and ownership
 # Container runs as root, entrypoint fixes permissions then switches to appuser
