@@ -224,9 +224,15 @@ function formatDate(dateString) {
 }
 
 function shouldTruncate(text) {
-  if (!text) return false
-  // Aproximadamente 5 linhas de texto (considerando ~80 caracteres por linha)
-  return text.length > 400
+  if (!text || text.trim().length === 0) return false
+  // Verifica se o texto tem mais de aproximadamente 5 linhas
+  // Considerando ~70-80 caracteres por linha com line-height 1.6
+  // 5 linhas = aproximadamente 350-400 caracteres
+  // Mas vamos usar uma verificação mais precisa baseada em quebras de linha e comprimento
+  const lines = text.split('\n').length
+  const avgCharsPerLine = 75
+  const estimatedLines = Math.ceil(text.length / avgCharsPerLine)
+  return estimatedLines > 5 || lines > 5 || text.length > 350
 }
 
 function openSynopsisModal(movie) {
@@ -318,7 +324,7 @@ function openSynopsisModal(movie) {
 
 .movie-poster {
   width: 100%;
-  height: 500px;
+  height: 380px;
   overflow: hidden;
   background: #f0f0f0;
   flex-shrink: 0;
@@ -352,6 +358,12 @@ function openSynopsisModal(movie) {
   color: #333;
   line-height: 1.3;
   min-height: 2.6rem;
+  max-height: 3.9rem;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .release-date {
@@ -363,12 +375,14 @@ function openSynopsisModal(movie) {
 .overview-container {
   flex-grow: 1;
   margin-bottom: 1rem;
+  min-height: 0;
 }
 
 .overview {
   color: #555;
   line-height: 1.6;
   margin-bottom: 0.5rem;
+  word-wrap: break-word;
 }
 
 .overview.truncated {
@@ -379,6 +393,7 @@ function openSynopsisModal(movie) {
   overflow: hidden;
   text-overflow: ellipsis;
   max-height: calc(1.6em * 5);
+  word-break: break-word;
 }
 
 .read-more-btn {
