@@ -282,6 +282,44 @@ film-catalog/
 - `PUT /api/permissions/{id}` - Atualizar permissão
 - `DELETE /api/permissions/{id}` - Deletar permissão
 
+## 🔧 Troubleshooting
+
+### Problemas de Permissão
+
+Se você encontrar erros como "Failed to save ... insufficient permissions" ou precisar usar `sudo` para salvar arquivos:
+
+1. **Verifique se as variáveis UID/GID estão configuradas:**
+   ```bash
+   echo $UID
+   echo $GID
+   ```
+
+2. **Reconstrua os containers com as variáveis corretas:**
+   ```bash
+   export UID=$(id -u)
+   export GID=$(id -g)
+   docker-compose down
+   docker-compose build --no-cache
+   docker-compose up -d
+   ```
+
+3. **Use o script de correção de permissões:**
+   ```bash
+   ./fix-permissions.sh
+   ```
+
+4. **Corrija manualmente se necessário:**
+   ```bash
+   sudo chown -R $(id -u):$(id -g) backend/ frontend/
+   ```
+
+### Arquivos criados como root
+
+Se arquivos forem criados como `root:root`, isso significa que os containers não estão usando o UID/GID correto. Certifique-se de:
+- Ter as variáveis `UID` e `GID` exportadas antes de executar `docker-compose`
+- Ter reconstruído os containers após configurar as variáveis
+- Verificar que o `docker-compose.yml` está usando `${UID:-1000}` e `${GID:-1000}`
+
 ## 🧪 Testes
 
 ### Backend

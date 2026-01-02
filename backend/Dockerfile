@@ -41,31 +41,27 @@ RUN sed -i 's/listen = .*/listen = 0.0.0.0:9000/' /usr/local/etc/php-fpm.d/www.c
 RUN echo '#!/bin/bash\n\
 set -e\n\
 \n\
-# Get user/group IDs from environment or use defaults\n\
-USER_ID=${UID:-1000}\n\
-GROUP_ID=${GID:-1000}\n\
-\n\
-# Fix ownership of entire application directory\n\
-chown -R appuser:appuser /var/www/html 2>/dev/null || true\n\
-\n\
-# Fix permissions for storage and bootstrap/cache (must be writable)\n\
-if [ -d "/var/www/html/storage" ]; then\n\
-    chown -R appuser:appuser /var/www/html/storage\n\
-    chmod -R 775 /var/www/html/storage\n\
-    find /var/www/html/storage -type d -exec chmod 775 {} \\;\n\
-    find /var/www/html/storage -type f -exec chmod 664 {} \\;\n\
+# Fix ownership of entire application directory (only if mounted)\n\
+# This ensures files created inside container belong to appuser\n\
+if [ -d "/var/www/html" ]; then\n\
+    # Fix ownership for storage and bootstrap/cache (must be writable)\n\
+    if [ -d "/var/www/html/storage" ]; then\n\
+        chown -R appuser:appuser /var/www/html/storage 2>/dev/null || true\n\
+        chmod -R 775 /var/www/html/storage\n\
+        find /var/www/html/storage -type d -exec chmod 775 {} \\; 2>/dev/null || true\n\
+        find /var/www/html/storage -type f -exec chmod 664 {} \\; 2>/dev/null || true\n\
+    fi\n\
+    \n\
+    if [ -d "/var/www/html/bootstrap/cache" ]; then\n\
+        chown -R appuser:appuser /var/www/html/bootstrap/cache 2>/dev/null || true\n\
+        chmod -R 775 /var/www/html/bootstrap/cache\n\
+        find /var/www/html/bootstrap/cache -type d -exec chmod 775 {} \\; 2>/dev/null || true\n\
+        find /var/www/html/bootstrap/cache -type f -exec chmod 664 {} \\; 2>/dev/null || true\n\
+    fi\n\
+    \n\
+    # Ensure appuser owns vendor if it exists\n\
+    [ -d "/var/www/html/vendor" ] && chown -R appuser:appuser /var/www/html/vendor 2>/dev/null || true\n\
 fi\n\
-\n\
-if [ -d "/var/www/html/bootstrap/cache" ]; then\n\
-    chown -R appuser:appuser /var/www/html/bootstrap/cache\n\
-    chmod -R 775 /var/www/html/bootstrap/cache\n\
-    find /var/www/html/bootstrap/cache -type d -exec chmod 775 {} \\;\n\
-    find /var/www/html/bootstrap/cache -type f -exec chmod 664 {} \\;\n\
-fi\n\
-\n\
-# Ensure appuser owns vendor and node_modules if they exist\n\
-[ -d "/var/www/html/vendor" ] && chown -R appuser:appuser /var/www/html/vendor || true\n\
-[ -d "/var/www/html/node_modules" ] && chown -R appuser:appuser /var/www/html/node_modules || true\n\
 \n\
 # Execute original command as appuser\n\
 exec gosu appuser "$@"' > /usr/local/bin/docker-entrypoint.sh \
