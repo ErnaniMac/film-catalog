@@ -1,5 +1,9 @@
 FROM php:8.4-fpm
 
+# Build arguments for user/group IDs
+ARG USER_ID=1000
+ARG GROUP_ID=1000
+
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     git \
@@ -20,37 +24,55 @@ RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+# Create user with same UID/GID as host user
+RUN groupadd -g ${GROUP_ID} appuser || true \
+    && useradd -u ${USER_ID} -g ${GROUP_ID} -m -s /bin/bash appuser || true
+
 # Set working directory
 WORKDIR /var/www/html
 
-# Configure PHP-FPM
+# Configure PHP-FPM to use appuser
 RUN sed -i 's/listen = .*/listen = 0.0.0.0:9000/' /usr/local/etc/php-fpm.d/www.conf \
     && sed -i 's/;clear_env = no/clear_env = no/' /usr/local/etc/php-fpm.d/www.conf \
-    && sed -i 's/user = www-data/user = www-data/' /usr/local/etc/php-fpm.d/www.conf \
-    && sed -i 's/group = www-data/group = www-data/' /usr/local/etc/php-fpm.d/www.conf
+    && sed -i "s/user = www-data/user = appuser/" /usr/local/etc/php-fpm.d/www.conf \
+    && sed -i "s/group = www-data/group = appuser/" /usr/local/etc/php-fpm.d/www.conf
 
-# Create entrypoint script to fix permissions
+# Create entrypoint script to fix permissions and ownership
 RUN echo '#!/bin/bash\n\
 set -e\n\
 \n\
-# Fix permissions for storage and bootstrap/cache\n\
+# Get user/group IDs from environment or use defaults\n\
+USER_ID=${UID:-1000}\n\
+GROUP_ID=${GID:-1000}\n\
+\n\
+# Fix ownership of entire application directory\n\
+chown -R appuser:appuser /var/www/html 2>/dev/null || true\n\
+\n\
+# Fix permissions for storage and bootstrap/cache (must be writable)\n\
 if [ -d "/var/www/html/storage" ]; then\n\
-    chown -R www-data:www-data /var/www/html/storage 2>/dev/null || true\n\
+    chown -R appuser:appuser /var/www/html/storage\n\
     chmod -R 775 /var/www/html/storage\n\
     find /var/www/html/storage -type d -exec chmod 775 {} \\;\n\
     find /var/www/html/storage -type f -exec chmod 664 {} \\;\n\
 fi\n\
 \n\
 if [ -d "/var/www/html/bootstrap/cache" ]; then\n\
-    chown -R www-data:www-data /var/www/html/bootstrap/cache 2>/dev/null || true\n\
+    chown -R appuser:appuser /var/www/html/bootstrap/cache\n\
     chmod -R 775 /var/www/html/bootstrap/cache\n\
     find /var/www/html/bootstrap/cache -type d -exec chmod 775 {} \\;\n\
     find /var/www/html/bootstrap/cache -type f -exec chmod 664 {} \\;\n\
 fi\n\
 \n\
-# Execute original command\n\
-exec "$@"' > /usr/local/bin/docker-entrypoint.sh \
+# Ensure appuser owns vendor and node_modules if they exist\n\
+[ -d "/var/www/html/vendor" ] && chown -R appuser:appuser /var/www/html/vendor || true\n\
+[ -d "/var/www/html/node_modules" ] && chown -R appuser:appuser /var/www/html/node_modules || true\n\
+\n\
+# Execute original command as appuser\n\
+exec gosu appuser "$@"' > /usr/local/bin/docker-entrypoint.sh \
     && chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# Install gosu for user switching
+RUN apt-get update && apt-get install -y gosu && rm -rf /var/lib/apt/lists/*
 
 # Expose port 9000 (PHP-FPM)
 EXPOSE 9000

@@ -116,13 +116,34 @@ VITE_APP_NAME="Film Catalog"
 VITE_API_URL=http://localhost:8000/api
 ```
 
-### 3. Inicie os containers Docker
+### 3. Configure UID/GID para Docker (Opcional mas recomendado)
+
+Para evitar problemas de permissão, configure o UID e GID do seu usuário:
 
 ```bash
-docker-compose up -d
+# Verifique seu UID e GID
+id
+
+# Crie ou edite o arquivo .env.docker na raiz do projeto
+echo "UID=$(id -u)" > .env.docker
+echo "GID=$(id -g)" >> .env.docker
+
+# Ou exporte as variáveis antes de iniciar os containers
+export UID=$(id -u)
+export GID=$(id -g)
 ```
 
-### 4. Configure o Laravel
+### 4. Inicie os containers Docker
+
+```bash
+# Se você exportou UID e GID, use:
+docker-compose up -d --build
+
+# Ou se criou .env.docker, carregue antes:
+source .env.docker && docker-compose up -d --build
+```
+
+### 5. Configure o Laravel
 
 ```bash
 # Entre no container do Laravel
@@ -141,7 +162,7 @@ php artisan db:seed
 exit
 ```
 
-### 5. Instale as dependências do frontend
+### 6. Instale as dependências do frontend
 
 ```bash
 # Entre no container do Node

@@ -31,9 +31,13 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      args:
+        USER_ID: ${UID:-1000}
+        GROUP_ID: ${GID:-1000}
     container_name: film-catalog-laravel
     restart: unless-stopped
     working_dir: /var/www/html
+    user: "${UID:-1000}:${GID:-1000}"
     volumes:
       - ./backend:/var/www/html
     depends_on:
@@ -48,8 +52,8 @@ services:
       DB_PASSWORD: password
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      UID: ${UID:-33}
-      GID: ${GID:-33}
+      UID: ${UID:-1000}
+      GID: ${GID:-1000}
     networks:
       - film-network
 
@@ -74,9 +78,13 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        USER_ID: ${UID:-1000}
+        GROUP_ID: ${GID:-1000}
     container_name: film-catalog-node
     restart: unless-stopped
     working_dir: /app
+    user: "${UID:-1000}:${GID:-1000}"
     volumes:
       - ./frontend:/app
       - /app/node_modules
