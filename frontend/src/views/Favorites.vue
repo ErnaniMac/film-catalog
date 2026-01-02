@@ -53,7 +53,7 @@
               class="overview" 
               :class="{ 'truncated': favorite.overview && shouldTruncate(favorite.overview) }"
             >
-              {{ favorite.overview || 'Sem descrição' }}
+              {{ truncateText(favorite.overview) }}
             </p>
             <Button
               v-if="favorite.overview && shouldTruncate(favorite.overview)"
@@ -209,14 +209,14 @@ function getGenreName(genreId) {
 
 function shouldTruncate(text) {
   if (!text || text.trim().length === 0) return false
-  // Aproximadamente 3 linhas considerando:
-  // - line-height: 1.6
-  // - font-size padrão (~14-16px)
-  // - largura do card (~250-300px)
-  // - aproximadamente 50-60 caracteres por linha
-  // Total: ~150-180 caracteres para 3 linhas
-  // Usamos um valor conservador de 150 caracteres
-  return text.length > 150
+  // Limitar a 72 caracteres exatos
+  return text.length > 72
+}
+
+function truncateText(text, maxLength = 72) {
+  if (!text) return 'Sem descrição'
+  if (text.length <= maxLength) return text
+  return text.substring(0, maxLength) + '...'
 }
 
 function openSynopsisModal(favorite) {
@@ -369,18 +369,15 @@ function openSynopsisModal(favorite) {
   margin-bottom: 0.5rem;
   word-wrap: break-word;
   display: block;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.9rem;
+  white-space: pre-wrap;
 }
 
 .overview.truncated {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
-  -webkit-box-orient: vertical;
+  /* Limitar a 72 caracteres - já truncado pela função truncateText */
+  max-width: 100%;
   overflow: hidden;
-  text-overflow: ellipsis;
-  word-break: break-word;
-  /* Forçar altura máxima para garantir 3 linhas */
-  max-height: 4.8em; /* 1.6em * 3 = 4.8em */
 }
 
 .read-more-btn {
