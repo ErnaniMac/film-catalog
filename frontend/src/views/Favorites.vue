@@ -101,6 +101,7 @@
       :header="selectedFavorite?.title || 'Sinopse'"
       :modal="true"
       :style="{ width: '600px' }"
+      :autoFocus="false"
     >
       <div class="synopsis-content">
         <p>{{ selectedFavorite?.overview || 'Sem descrição disponível' }}</p>
