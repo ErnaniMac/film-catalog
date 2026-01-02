@@ -58,7 +58,7 @@
               class="overview" 
               :class="{ 'truncated': movie.overview && shouldTruncate(movie.overview) }"
             >
-              {{ movie.overview || 'Sem descrição disponível' }}
+              {{ truncateText(movie.overview) }}
             </p>
             <Button
               v-if="movie.overview && shouldTruncate(movie.overview)"
@@ -228,14 +228,14 @@ function formatDate(dateString) {
 
 function shouldTruncate(text) {
   if (!text || text.trim().length === 0) return false
-  // Aproximadamente 4 linhas considerando:
-  // - line-height: 1.3
-  // - font-size: 0.9rem (~14-15px)
-  // - largura do card (~250-300px)
-  // - aproximadamente 50-60 caracteres por linha
-  // Total: ~200-240 caracteres para 4 linhas
-  // Usamos um valor conservador de 200 caracteres
-  return text.length > 200
+  // Limitar a 72 caracteres exatos
+  return text.length > 72
+}
+
+function truncateText(text, maxLength = 72) {
+  if (!text) return 'Sem descrição disponível'
+  if (text.length <= maxLength) return text
+  return text.substring(0, maxLength) + '...'
 }
 
 function openSynopsisModal(movie) {
@@ -383,23 +383,19 @@ function openSynopsisModal(movie) {
 
 .overview {
   color: #555;
-  line-height: 1.3;
+  line-height: 1.6;
   margin-bottom: 0.5rem;
   word-wrap: break-word;
   display: block;
   font-family: 'Courier New', Courier, monospace;
   font-size: 0.9rem;
+  white-space: pre-wrap;
 }
 
 .overview.truncated {
-  display: -webkit-box;
-  -webkit-line-clamp: 4;
-  line-clamp: 4;
-  -webkit-box-orient: vertical;
+  /* Limitar a 72 caracteres - já truncado pela função truncateText */
+  max-width: 100%;
   overflow: hidden;
-  text-overflow: ellipsis;
-  word-break: break-word;
-  max-height: calc(1.3em * 4);
 }
 
 .read-more-btn {
@@ -425,7 +421,6 @@ function openSynopsisModal(movie) {
 
 .movie-actions button {
   width: 100%;
-  font-size: 14px;
 }
 
 .no-results {

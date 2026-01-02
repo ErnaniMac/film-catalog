@@ -42,6 +42,7 @@ class TmdbController extends Controller
                 'query' => $query,
                 'page' => $page,
                 'language' => 'pt-BR',
+                'include_adult' => false,
             ]);
         });
 
