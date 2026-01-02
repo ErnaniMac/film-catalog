@@ -83,6 +83,15 @@
       </div>
     </div>
 
+    <div v-else class="no-favorites">
+      <p>Você ainda não tem filmes favoritos.</p>
+      <Button
+        label="Buscar Filmes"
+        icon="pi pi-search"
+        @click="$router.push('/films')"
+      />
+    </div>
+
     <!-- Modal de Sinopse -->
     <Dialog
       v-model:visible="synopsisModalVisible"
@@ -109,15 +118,6 @@
         <Button label="Fechar" @click="synopsisModalVisible = false" />
       </template>
     </Dialog>
-
-    <div v-else class="no-favorites">
-      <p>Você ainda não tem filmes favoritos.</p>
-      <Button
-        label="Buscar Filmes"
-        icon="pi pi-search"
-        @click="$router.push('/films')"
-      />
-    </div>
   </div>
 </template>
 
