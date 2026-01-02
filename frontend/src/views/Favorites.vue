@@ -365,7 +365,7 @@ function openSynopsisModal(favorite) {
 
 .overview {
   color: #555;
-  line-height: 1.6;
+  line-height: 1.3;
   margin-bottom: 0.5rem;
   word-wrap: break-word;
   display: block;
@@ -424,6 +424,7 @@ function openSynopsisModal(favorite) {
 
 .favorite-actions button {
   width: 100%;
+  font-size: 14px;
 }
 
 .no-favorites {

@@ -383,7 +383,7 @@ function openSynopsisModal(movie) {
 
 .overview {
   color: #555;
-  line-height: 1.6;
+  line-height: 1.3;
   margin-bottom: 0.5rem;
   word-wrap: break-word;
   display: block;
@@ -421,6 +421,7 @@ function openSynopsisModal(movie) {
 
 .movie-actions button {
   width: 100%;
+  font-size: 14px;
 }
 
 .no-results {
