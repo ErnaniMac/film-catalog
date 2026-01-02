@@ -623,4 +623,30 @@ async function executeDelete() {
   gap: 0.5rem;
   margin-top: 1.5rem;
 }
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+  gap: 1rem;
+}
+
+.no-data {
+  text-align: center;
+  padding: 4rem;
+  color: #666;
+}
+
+.debug-info {
+  font-size: 0.85rem;
+  color: #999;
+  margin-top: 0.5rem;
+}
+
+.no-permissions {
+  color: #999;
+  font-style: italic;
+}
 </style>
