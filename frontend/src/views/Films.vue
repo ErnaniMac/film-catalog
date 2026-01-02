@@ -86,6 +86,10 @@
       </div>
     </div>
 
+    <div v-else-if="filmStore.searchQuery && !filmStore.loading" class="no-results">
+      <p>Nenhum filme encontrado para "{{ filmStore.searchQuery }}"</p>
+    </div>
+
     <!-- Modal de Sinopse -->
     <Dialog
       v-model:visible="synopsisModalVisible"
@@ -103,10 +107,6 @@
         <Button label="Fechar" @click="synopsisModalVisible = false" />
       </template>
     </Dialog>
-
-    <div v-else-if="filmStore.searchQuery && !filmStore.loading" class="no-results">
-      <p>Nenhum filme encontrado para "{{ filmStore.searchQuery }}"</p>
-    </div>
 
     <div v-if="filmStore.movies.length > 0" class="pagination">
       <Button
