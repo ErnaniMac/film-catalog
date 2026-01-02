@@ -74,8 +74,13 @@
           <p>Carregando roles...</p>
         </div>
 
+        <div v-if="!rolesLoading && adminStore.roles.length === 0" class="no-data">
+          <p>Nenhuma role encontrada.</p>
+          <p class="debug-info">Debug: roles.length = {{ adminStore.roles.length }}</p>
+        </div>
+
         <DataTable
-          v-else
+          v-else-if="!rolesLoading"
           :value="adminStore.roles"
           paginator
           :rows="10"
@@ -91,6 +96,9 @@
                 class="permission-badge"
               >
                 {{ permission.name }}
+              </span>
+              <span v-if="!data.permissions || data.permissions.length === 0" class="no-permissions">
+                Sem permissões
               </span>
             </template>
           </Column>
@@ -130,8 +138,13 @@
           <p>Carregando permissões...</p>
         </div>
 
+        <div v-if="!permissionsLoading && adminStore.permissions.length === 0" class="no-data">
+          <p>Nenhuma permissão encontrada.</p>
+          <p class="debug-info">Debug: permissions.length = {{ adminStore.permissions.length }}</p>
+        </div>
+
         <DataTable
-          v-else
+          v-else-if="!permissionsLoading"
           :value="adminStore.permissions"
           paginator
           :rows="10"
