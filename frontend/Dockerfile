@@ -31,28 +31,26 @@ RUN EXISTING_GROUP=$(getent group ${GROUP_ID} 2>/dev/null | cut -d: -f1 || echo 
 RUN apk add --no-cache su-exec
 
 # Create entrypoint script to fix permissions
-RUN echo '#!/bin/sh\n\
-set -e\n\
-\n\
-# Fix ownership of app directory if running as root\n\
-if [ "$(id -u)" = "0" ] && [ -d "/app" ]; then\n\
-    chown -R appuser:appuser /app 2>/dev/null || true\n\
-    find /app -type d -exec chmod 755 {} \\; 2>/dev/null || true\n\
-    find /app -type f -exec chmod 644 {} \\; 2>/dev/null || true\n\
-    \n\
-    # Ensure node_modules directory exists and is writable\n\
-    mkdir -p /app/node_modules 2>/dev/null || true\n\
-    chown -R appuser:appuser /app/node_modules 2>/dev/null || true\n\
-    chmod -R 755 /app/node_modules 2>/dev/null || true\n\
-fi\n\
-\n\
-# Switch to appuser and execute command\n\
-if [ "$(id -u)" = "0" ]; then\n\
-    exec su-exec appuser "$@"\n\
-else\n\
-    exec "$@"\n\
-fi' > /usr/local/bin/docker-entrypoint.sh \
-    && chmod +x /usr/local/bin/docker-entrypoint.sh
+RUN echo '#!/bin/sh' > /usr/local/bin/docker-entrypoint.sh && \
+    echo 'set -e' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '# Fix ownership of app directory if running as root' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'if [ "$(id -u)" = "0" ] && [ -d "/app" ]; then' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    chown -R appuser:appuser /app 2>/dev/null || true' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    find /app -type d -exec chmod 755 {} \; 2>/dev/null || true' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    find /app -type f -exec chmod 644 {} \; 2>/dev/null || true' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    mkdir -p /app/node_modules 2>/dev/null || true' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    chown -R appuser:appuser /app/node_modules 2>/dev/null || true' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    chmod -R 755 /app/node_modules 2>/dev/null || true' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'fi' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '# Switch to appuser and execute command' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'if [ "$(id -u)" = "0" ]; then' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    exec su-exec appuser "$@"' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'else' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    exec "$@"' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'fi' >> /usr/local/bin/docker-entrypoint.sh && \
+    chmod +x /usr/local/bin/docker-entrypoint.sh
 
 WORKDIR /app
 
