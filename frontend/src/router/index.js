@@ -34,6 +34,12 @@ const router = createRouter({
       meta: { requiresGuest: true }
     },
     {
+      path: '/verify-email',
+      name: 'verify-email',
+      component: () => import('@/views/VerifyEmail.vue'),
+      meta: { requiresGuest: true }
+    },
+    {
       path: '/films',
       name: 'films',
       component: () => import('@/views/Films.vue'),
