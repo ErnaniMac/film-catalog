@@ -65,10 +65,18 @@ export const useAdminStore = defineStore('admin', () => {
   async function fetchRoles() {
     try {
       const response = await api.get('/roles')
-      roles.value = response.data.data || []
+      // A API retorna { data: [...] } ou [...] diretamente
+      const data = response.data?.data || response.data
+      roles.value = Array.isArray(data) ? data : []
+      console.log('Roles carregadas:', roles.value.length)
     } catch (error) {
       console.error('Erro ao buscar roles:', error)
+      if (error.response) {
+        console.error('Status:', error.response.status)
+        console.error('Data:', error.response.data)
+      }
       roles.value = []
+      throw error
     }
   }
 
@@ -115,10 +123,18 @@ export const useAdminStore = defineStore('admin', () => {
   async function fetchPermissions() {
     try {
       const response = await api.get('/permissions')
-      permissions.value = response.data.data || []
+      // A API retorna { data: [...] } ou [...] diretamente
+      const data = response.data?.data || response.data
+      permissions.value = Array.isArray(data) ? data : []
+      console.log('Permissões carregadas:', permissions.value.length)
     } catch (error) {
       console.error('Erro ao buscar permissões:', error)
+      if (error.response) {
+        console.error('Status:', error.response.status)
+        console.error('Data:', error.response.data)
+      }
       permissions.value = []
+      throw error
     }
   }
 

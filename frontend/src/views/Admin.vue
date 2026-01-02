@@ -69,7 +69,13 @@
           />
         </div>
 
+        <div v-if="rolesLoading" class="loading">
+          <ProgressSpinner />
+          <p>Carregando roles...</p>
+        </div>
+
         <DataTable
+          v-else
           :value="adminStore.roles"
           paginator
           :rows="10"
@@ -119,7 +125,13 @@
           />
         </div>
 
+        <div v-if="permissionsLoading" class="loading">
+          <ProgressSpinner />
+          <p>Carregando permissões...</p>
+        </div>
+
         <DataTable
+          v-else
           :value="adminStore.permissions"
           paginator
           :rows="10"
@@ -261,10 +273,14 @@ import InputText from 'primevue/inputtext'
 import MultiSelect from 'primevue/multiselect'
 import TabView from 'primevue/tabview'
 import TabPanel from 'primevue/tabpanel'
+import ProgressSpinner from 'primevue/progressspinner'
 import { useToast } from 'primevue/usetoast'
 
 const adminStore = useAdminStore()
 const toast = useToast()
+
+const rolesLoading = ref(false)
+const permissionsLoading = ref(false)
 
 // User Dialog
 const userDialogVisible = ref(false)
@@ -301,11 +317,20 @@ const deleteId = ref(null)
 const deleteMessage = ref('')
 
 onMounted(async () => {
-  await Promise.all([
-    adminStore.fetchUsers(),
-    adminStore.fetchRoles(),
-    adminStore.fetchPermissions()
-  ])
+  rolesLoading.value = true
+  permissionsLoading.value = true
+  
+  try {
+    await Promise.all([
+      adminStore.fetchUsers(),
+      adminStore.fetchRoles().finally(() => { rolesLoading.value = false }),
+      adminStore.fetchPermissions().finally(() => { permissionsLoading.value = false })
+    ])
+  } catch (error) {
+    console.error('Erro ao carregar dados:', error)
+    rolesLoading.value = false
+    permissionsLoading.value = false
+  }
 })
 
 // User functions
