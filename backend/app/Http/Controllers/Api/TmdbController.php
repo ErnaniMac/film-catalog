@@ -83,14 +83,5 @@ class TmdbController extends Controller
         }
 
         return response()->json($data, 200);
-
-        if ($response->failed()) {
-            return response()->json([
-                'error' => 'Erro ao buscar filmes na API TMDB'
-            ], $response->status());
-        }
-
-        return response()->json($response->json(), 200);
     }
-
 }
