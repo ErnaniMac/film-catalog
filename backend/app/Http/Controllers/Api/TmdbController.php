@@ -48,7 +48,7 @@ class TmdbController extends Controller
                 ]);
 
                 // Se a resposta falhou, não cachear
-                if (!$httpResponse->ok()) {
+                if ($httpResponse->status() !== 200) {
                     throw new \Exception('TMDB API request failed');
                 }
 
@@ -56,7 +56,7 @@ class TmdbController extends Controller
             });
 
             // Verificar se a resposta foi bem-sucedida
-            if (!$response->ok()) {
+            if ($response->status() !== 200) {
                 // Se falhou, limpar o cache para essa query e retornar erro
                 Cache::forget($cacheKey);
                 
