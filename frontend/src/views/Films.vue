@@ -34,8 +34,7 @@
       <p>Buscando filmes...</p>
     </div>
 
-    <template v-else-if="filmStore.movies.length > 0">
-    <div class="movies-grid">
+    <div v-else-if="filmStore.movies.length > 0" class="movies-grid">
       <div
         v-for="movie in filmStore.movies"
         :key="movie.id"
