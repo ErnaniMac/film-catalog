@@ -69,17 +69,24 @@ if [ -d "/var/www/html" ]; then\n\
     fi\n\
 fi\n\
 \n\
-# Switch to appuser and execute command\n\
-# PHP-FPM will run as appuser\n\
-if [ "$(id -u)" = "0" ]; then\n\
-    exec gosu appuser "$@"\n\
-else\n\
-    exec "$@"\n\
-fi' > /usr/local/bin/docker-entrypoint.sh \
+# Execute command as root - PHP-FPM will spawn workers as appuser (configured in www.conf)\n\
+# This avoids permission issues with error_log\n\
+exec "$@"' > /usr/local/bin/docker-entrypoint.sh \
     && chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Install gosu for user switching
 RUN apt-get update && apt-get install -y gosu && rm -rf /var/lib/apt/lists/*
+
+# Create log directory and file that will be used by PHP-FPM
+RUN mkdir -p /var/www/html/storage/logs \
+    && touch /var/www/html/storage/logs/php-fpm.log \
+    && chown -R appuser:appuser /var/www/html/storage/logs \
+    && chmod 775 /var/www/html/storage/logs \
+    && chmod 664 /var/www/html/storage/logs/php-fpm.log
+
+# Configure error_log in php-fpm.conf to use the file we just created
+RUN sed -i 's|^error_log =.*|error_log = /var/www/html/storage/logs/php-fpm.log|' /usr/local/etc/php-fpm.conf \
+    && sed -i 's|^;error_log =.*|error_log = /var/www/html/storage/logs/php-fpm.log|' /usr/local/etc/php-fpm.conf
 
 # Expose port 9000 (PHP-FPM)
 EXPOSE 9000
