@@ -1,10 +1,10 @@
 <template>
-  <div class="login-container">
-    <div class="login-card">
-      <h1>Login</h1>
-      <p>Entre com suas credenciais</p>
+  <div class="forgot-password-container">
+    <div class="forgot-password-card">
+      <h1>Recuperar Senha</h1>
+      <p>Digite seu e-mail para receber o link de redefinição</p>
       
-      <form @submit.prevent="handleLogin" class="login-form">
+      <form @submit.prevent="handleSendResetLink" class="forgot-password-form">
         <div class="form-field">
           <label>Email</label>
           <InputText
@@ -16,21 +16,10 @@
           />
         </div>
         
-        <div class="form-field">
-          <label>Senha</label>
-          <InputText
-            v-model="password"
-            type="password"
-            placeholder="Sua senha"
-            required
-            class="full-width"
-          />
-        </div>
-        
         <Button
           type="submit"
-          label="Entrar"
-          icon="pi pi-sign-in"
+          label="Enviar Link de Redefinição"
+          icon="pi pi-envelope"
           :loading="loading"
           class="full-width"
         />
@@ -40,11 +29,12 @@
         {{ error }}
       </div>
 
-      <div class="links">
-        <p>
-          <router-link to="/register">Criar conta</router-link> |
-          <router-link to="/forgot-password">Esqueci minha senha</router-link>
-        </p>
+      <div v-if="success" class="success-message">
+        {{ success }}
+      </div>
+
+      <div class="login-link">
+        <p>Lembrou sua senha? <router-link to="/login">Voltar ao login</router-link></p>
       </div>
     </div>
   </div>
@@ -52,66 +42,74 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
 import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
-
-const router = useRouter()
-const authStore = useAuthStore()
+import api from '@/composables/useApi'
 
 const email = ref('')
-const password = ref('')
 const loading = ref(false)
 const error = ref('')
+const success = ref('')
 
-async function handleLogin() {
+async function handleSendResetLink() {
   loading.value = true
   error.value = ''
+  success.value = ''
   
-  const result = await authStore.login(email.value, password.value)
-  
-  if (result.success) {
-    router.push('/films')
-  } else {
-    error.value = result.error
+  try {
+    const response = await api.post('/forgot-password', {
+      email: email.value
+    })
+    
+    if (response.data) {
+      success.value = response.data.message || 'Link de redefinição enviado com sucesso!'
+      email.value = ''
+    }
+  } catch (err) {
+    if (err.response?.data?.errors) {
+      const errors = err.response.data.errors
+      error.value = Object.values(errors).flat().join(', ')
+    } else {
+      error.value = err.response?.data?.message || 'Erro ao enviar link. Verifique se o e-mail está correto.'
+    }
+  } finally {
+    loading.value = false
   }
-  
-  loading.value = false
 }
 </script>
 
 <style scoped>
-.login-container {
+.forgot-password-container {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 2rem;
 }
 
-.login-card {
+.forgot-password-card {
   background: white;
   padding: 3rem;
   border-radius: 12px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
   width: 100%;
-  max-width: 400px;
+  max-width: 450px;
 }
 
-.login-card h1 {
+.forgot-password-card h1 {
   text-align: center;
   margin-bottom: 0.5rem;
   color: #333;
 }
 
-.login-card p {
+.forgot-password-card p {
   text-align: center;
   color: #666;
   margin-bottom: 2rem;
 }
 
-.login-form {
+.forgot-password-form {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -141,19 +139,28 @@ async function handleLogin() {
   text-align: center;
 }
 
-.links {
+.success-message {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: #efe;
+  color: #3c3;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.login-link {
   margin-top: 1.5rem;
   text-align: center;
   color: #666;
 }
 
-.links a {
+.login-link a {
   color: #1976d2;
   text-decoration: none;
   font-weight: 500;
 }
 
-.links a:hover {
+.login-link a:hover {
   text-decoration: underline;
 }
 </style>

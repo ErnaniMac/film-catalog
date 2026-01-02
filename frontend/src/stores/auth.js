@@ -12,6 +12,17 @@ export const useAuthStore = defineStore('auth', () => {
   async function login(email, password) {
     try {
       const response = await api.post('/login', { email, password })
+      
+      // Verificar se o e-mail não foi verificado
+      if (response.status === 403 && response.data?.email_verified === false) {
+        return { 
+          success: false, 
+          error: response.data.message || 'E-mail não verificado',
+          emailNotVerified: true,
+          userId: response.data.user_id
+        }
+      }
+      
       token.value = response.data.token
       user.value = response.data.user
       localStorage.setItem('token', token.value)

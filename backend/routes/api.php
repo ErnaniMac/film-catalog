@@ -7,10 +7,23 @@ use App\Http\Controllers\Api\TmdbController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\PermissionController;
+use App\Http\Controllers\Api\RegisterController;
+use App\Http\Controllers\Api\PasswordResetController;
 
 // Public routes
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/tmdb/search', [TmdbController::class, 'search']);
+
+// Registration and email verification
+Route::post('/register', [RegisterController::class, 'register']);
+Route::get('/email/verify/{id}/{hash}', [RegisterController::class, 'verify'])
+    ->name('verification.verify');
+Route::post('/email/verification-notification', [RegisterController::class, 'resendVerification']);
+
+// Password reset
+Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink']);
+Route::post('/reset-password', [PasswordResetController::class, 'reset'])
+    ->name('password.reset');
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {

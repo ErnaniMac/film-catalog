@@ -30,6 +30,15 @@ class AuthController extends Controller
             ]);
         }
 
+        // Verificar se o e-mail foi verificado
+        if (!$user->hasVerifiedEmail()) {
+            return response()->json([
+                'message' => 'Por favor, verifique seu e-mail antes de fazer login.',
+                'email_verified' => false,
+                'user_id' => $user->id,
+            ], 403);
+        }
+
         $token = $user->createToken('auth-token')->plainTextToken;
         $user->load('roles', 'permissions');
 
