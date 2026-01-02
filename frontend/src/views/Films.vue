@@ -54,11 +54,14 @@
             {{ formatDate(movie.release_date) }}
           </p>
           <div class="overview-container">
-            <p class="overview" :class="{ 'truncated': shouldTruncate(movie.overview) }">
+            <p 
+              class="overview" 
+              :class="{ 'truncated': movie.overview && movie.overview.length > 200 }"
+            >
               {{ movie.overview || 'Sem descrição disponível' }}
             </p>
             <Button
-              v-if="shouldTruncate(movie.overview)"
+              v-if="movie.overview && shouldTruncate(movie.overview)"
               label="Continuar lendo"
               icon="pi pi-eye"
               text
