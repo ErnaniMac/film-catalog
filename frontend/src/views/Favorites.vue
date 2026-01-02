@@ -48,7 +48,20 @@
         </div>
         <div class="favorite-info">
           <h3>{{ favorite.title }}</h3>
-          <p class="overview">{{ favorite.overview || 'Sem descrição' }}</p>
+          <div class="overview-container">
+            <p class="overview" :class="{ 'truncated': shouldTruncate(favorite.overview) }">
+              {{ favorite.overview || 'Sem descrição' }}
+            </p>
+            <Button
+              v-if="shouldTruncate(favorite.overview)"
+              label="Continuar lendo"
+              icon="pi pi-eye"
+              text
+              severity="info"
+              class="read-more-btn"
+              @click="openSynopsisModal(favorite)"
+            />
+          </div>
           <div v-if="favorite.genre_ids && favorite.genre_ids.length > 0" class="genres">
             <span
               v-for="genreId in favorite.genre_ids"
@@ -70,6 +83,33 @@
       </div>
     </div>
 
+    <!-- Modal de Sinopse -->
+    <Dialog
+      v-model:visible="synopsisModalVisible"
+      :header="selectedFavorite?.title || 'Sinopse'"
+      :modal="true"
+      :style="{ width: '600px' }"
+    >
+      <div class="synopsis-content">
+        <p>{{ selectedFavorite?.overview || 'Sem descrição disponível' }}</p>
+        <div v-if="selectedFavorite?.genre_ids && selectedFavorite.genre_ids.length > 0" class="modal-genres">
+          <strong>Gêneros:</strong>
+          <div class="genres-list">
+            <span
+              v-for="genreId in selectedFavorite.genre_ids"
+              :key="genreId"
+              class="genre-badge"
+            >
+              {{ getGenreName(genreId) }}
+            </span>
+          </div>
+        </div>
+      </div>
+      <template #footer>
+        <Button label="Fechar" @click="synopsisModalVisible = false" />
+      </template>
+    </Dialog>
+
     <div v-else class="no-favorites">
       <p>Você ainda não tem filmes favoritos.</p>
       <Button
@@ -87,12 +127,15 @@ import { useFavoriteStore } from '@/stores/favorite'
 import Select from 'primevue/select'
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
+import Dialog from 'primevue/dialog'
 import { useToast } from 'primevue/usetoast'
 
 const favoriteStore = useFavoriteStore()
 const toast = useToast()
 
 const selectedGenre = ref(null)
+const synopsisModalVisible = ref(false)
+const selectedFavorite = ref(null)
 
 // Gêneros do TMDB (principais)
 const genres = {
@@ -160,6 +203,17 @@ async function handleRemoveFavorite(favoriteId) {
 function getGenreName(genreId) {
   return genres[genreId] || `Gênero ${genreId}`
 }
+
+function shouldTruncate(text) {
+  if (!text) return false
+  // Aproximadamente 5 linhas de texto (considerando ~80 caracteres por linha)
+  return text.length > 400
+}
+
+function openSynopsisModal(favorite) {
+  selectedFavorite.value = favorite
+  synopsisModalVisible.value = true
+}
 </script>
 
 <style scoped>
@@ -212,8 +266,26 @@ function getGenreName(genreId) {
 
 .favorites-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 2rem;
+}
+
+@media (max-width: 1400px) {
+  .favorites-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 1024px) {
+  .favorites-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .favorites-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .favorite-card {
@@ -222,6 +294,9 @@ function getGenreName(genreId) {
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .favorite-card:hover {
@@ -231,9 +306,10 @@ function getGenreName(genreId) {
 
 .favorite-poster {
   width: 100%;
-  height: 450px;
+  height: 500px;
   overflow: hidden;
   background: #f0f0f0;
+  flex-shrink: 0;
 }
 
 .favorite-poster img {
@@ -253,18 +329,60 @@ function getGenreName(genreId) {
 
 .favorite-info {
   padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
 }
 
 .favorite-info h3 {
   margin: 0 0 0.5rem 0;
   font-size: 1.25rem;
   color: #333;
+  line-height: 1.3;
+  min-height: 2.6rem;
+}
+
+.overview-container {
+  flex-grow: 1;
+  margin-bottom: 1rem;
 }
 
 .overview {
   color: #555;
   line-height: 1.6;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.overview.truncated {
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: calc(1.6em * 5);
+}
+
+.read-more-btn {
+  padding: 0.25rem 0;
+  font-size: 0.9rem;
+}
+
+.synopsis-content {
+  line-height: 1.8;
+  color: #555;
+}
+
+.modal-genres {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.genres-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
 }
 
 .genres {
