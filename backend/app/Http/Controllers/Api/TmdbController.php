@@ -48,41 +48,30 @@ class TmdbController extends Controller
                 ]);
 
                 // Se a resposta falhou, não cachear
-                if ($httpResponse->status() !== 200) {
-                    throw new \Exception('TMDB API request failed');
+                if ($httpResponse->failed()) {
+                    throw new \Exception('TMDB API request failed: ' . $httpResponse->status());
                 }
 
-                return $httpResponse;
+                // Retornar apenas os dados JSON, não o objeto Response completo
+                return $httpResponse->json();
             });
 
-            // Verificar se a resposta foi bem-sucedida
-            if ($response->status() !== 200) {
-                // Se falhou, limpar o cache para essa query e retornar erro
-                Cache::forget($cacheKey);
-                
-                // Verificar se é rate limit (429)
-                if ($response->status() === 429) {
-                    return response()->json([
-                        'error' => 'Muitas requisições. Aguarde alguns segundos antes de tentar novamente.',
-                        'message' => 'Rate limit excedido. O TMDB permite 40 requisições por 10 segundos.'
-                    ], 429);
-                }
-
-                return response()->json([
-                    'error' => 'Erro ao buscar filmes na API TMDB',
-                    'status' => $response->status()
-                ], $response->status());
-            }
-
-            $data = $response->json();
-
             // Verificar se há resultados válidos - não cachear resultados vazios incorretos
-            if (!isset($data['results']) || (empty($data['results']) && isset($data['total_results']) && $data['total_results'] > 0)) {
-                // Se a API diz que há resultados mas não retornou, limpar cache
+            if (!isset($response['results'])) {
+                // Se não tem results, limpar cache e retornar erro
+                Cache::forget($cacheKey);
+                return response()->json([
+                    'error' => 'Resposta inválida da API TMDB'
+                ], 500);
+            }
+
+            // Se a API retornou resultados vazios mas diz que há resultados, pode ser rate limit
+            // Nesse caso, limpar cache para forçar nova busca
+            if (empty($response['results']) && isset($response['total_results']) && $response['total_results'] > 0) {
                 Cache::forget($cacheKey);
             }
 
-            return response()->json($data, 200);
+            return response()->json($response, 200);
 
         } catch (\Exception $e) {
             // Em caso de exceção, limpar cache e retornar erro
@@ -92,6 +81,14 @@ class TmdbController extends Controller
                 'query' => $query,
                 'page' => $page
             ]);
+
+            // Verificar se é rate limit
+            if (str_contains($e->getMessage(), '429')) {
+                return response()->json([
+                    'error' => 'Muitas requisições. Aguarde alguns segundos antes de tentar novamente.',
+                    'message' => 'Rate limit excedido. O TMDB permite 40 requisições por 10 segundos.'
+                ], 429);
+            }
 
             return response()->json([
                 'error' => 'Erro ao buscar filmes na API TMDB',
