@@ -209,14 +209,14 @@ function getGenreName(genreId) {
 
 function shouldTruncate(text) {
   if (!text || text.trim().length === 0) return false
-  // Aproximadamente 5 linhas considerando:
+  // Aproximadamente 3 linhas considerando:
   // - line-height: 1.6
   // - font-size padrão (~14-16px)
   // - largura do card (~250-300px)
   // - aproximadamente 50-60 caracteres por linha
-  // Total: ~250-300 caracteres para 5 linhas
-  // Usamos um valor conservador de 250 caracteres
-  return text.length > 250
+  // Total: ~150-180 caracteres para 3 linhas
+  // Usamos um valor conservador de 150 caracteres
+  return text.length > 150
 }
 
 function openSynopsisModal(favorite) {
@@ -373,14 +373,14 @@ function openSynopsisModal(favorite) {
 
 .overview.truncated {
   display: -webkit-box;
-  -webkit-line-clamp: 5;
-  line-clamp: 5;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
   word-break: break-word;
-  /* Forçar altura máxima para garantir 5 linhas */
-  max-height: 8em; /* 1.6em * 5 = 8em */
+  /* Forçar altura máxima para garantir 3 linhas */
+  max-height: 4.8em; /* 1.6em * 3 = 4.8em */
 }
 
 .read-more-btn {
