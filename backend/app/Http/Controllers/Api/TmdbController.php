@@ -37,29 +37,35 @@ class TmdbController extends Controller
 
         try {
             $data = Cache::remember($cacheKey, 3600, function () use ($apiUrl, $apiKey, $query, $page) {
-                try {
-                    $httpResponse = Http::timeout(10)->withHeaders([
-                        'Authorization' => "Bearer {$apiKey}",
-                        'Accept' => 'application/json',
-                    ])->get("{$apiUrl}/search/movie", [
-                        'query' => $query,
-                        'page' => $page,
-                        'language' => 'pt-BR',
-                        'include_adult' => false,
-                    ]);
+                /** @var \Illuminate\Http\Client\Response $httpResponse */
+                $httpResponse = Http::timeout(10)->withHeaders([
+                    'Authorization' => "Bearer {$apiKey}",
+                    'Accept' => 'application/json',
+                ])->get("{$apiUrl}/search/movie", [
+                    'query' => $query,
+                    'page' => $page,
+                    'language' => 'pt-BR',
+                    'include_adult' => false,
+                ]);
 
-                    // Usar throw() para lançar exceção automaticamente em caso de erro HTTP
-                    $httpResponse->throw();
-                    
-                    // Retornar os dados JSON
-                    return $httpResponse->json();
-                } catch (\Illuminate\Http\Client\RequestException $e) {
-                    // Se for rate limit (429), relançar com mensagem específica
-                    if ($e->response && $e->response->status() === 429) {
+                // Verificar se houve erro HTTP
+                if ($httpResponse->clientError() || $httpResponse->serverError()) {
+                    $status = method_exists($httpResponse, 'status') ? $httpResponse->status() : 500;
+                    if ($status === 429) {
                         throw new \Exception('Rate limit excedido. O TMDB permite 40 requisições por 10 segundos.');
                     }
-                    throw $e;
+                    throw new \Exception('TMDB API request failed with status: ' . $status);
                 }
+
+                // Retornar os dados JSON
+                $jsonData = $httpResponse->body();
+                $decoded = json_decode($jsonData, true);
+                
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    throw new \Exception('Invalid JSON response from TMDB API');
+                }
+                
+                return $decoded;
             });
 
             // Verificar se há resultados válidos - não cachear resultados vazios incorretos
