@@ -5,15 +5,15 @@
 set -e
 
 # Get current user ID and group ID
-USER_ID=$(id -u)
-GROUP_ID=$(id -g)
+HOST_UID=$(id -u)
+HOST_GID=$(id -g)
 
-echo "Fixing permissions for user $USER_ID:$GROUP_ID..."
+echo "Fixing permissions for user $HOST_UID:$HOST_GID..."
 
 # Fix backend permissions
 if [ -d "backend" ]; then
     echo "Fixing backend permissions..."
-    sudo chown -R $USER_ID:$GROUP_ID backend/
+    sudo chown -R $HOST_UID:$HOST_GID backend/
     find backend/ -type d -exec chmod 755 {} \;
     find backend/ -type f -exec chmod 644 {} \;
     
@@ -25,7 +25,7 @@ fi
 # Fix frontend permissions
 if [ -d "frontend" ]; then
     echo "Fixing frontend permissions..."
-    sudo chown -R $USER_ID:$GROUP_ID frontend/
+    sudo chown -R $HOST_UID:$HOST_GID frontend/
     find frontend/ -type d -exec chmod 755 {} \;
     find frontend/ -type f -exec chmod 644 {} \;
 fi

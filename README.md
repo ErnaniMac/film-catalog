@@ -125,18 +125,18 @@ Para evitar problemas de permissão, configure o UID e GID do seu usuário:
 id
 
 # Crie ou edite o arquivo .env.docker na raiz do projeto
-echo "UID=$(id -u)" > .env.docker
-echo "GID=$(id -g)" >> .env.docker
+echo "HOST_UID=$(id -u)" > .env.docker
+echo "HOST_GID=$(id -g)" >> .env.docker
 
 # Ou exporte as variáveis antes de iniciar os containers
-export UID=$(id -u)
-export GID=$(id -g)
+export HOST_UID=$(id -u)
+export HOST_GID=$(id -g)
 ```
 
 ### 4. Inicie os containers Docker
 
 ```bash
-# Se você exportou UID e GID, use:
+# Se você exportou HOST_UID e HOST_GID, use:
 docker-compose up -d --build
 
 # Ou se criou .env.docker, carregue antes:
@@ -288,16 +288,16 @@ film-catalog/
 
 Se você encontrar erros como "Failed to save ... insufficient permissions" ou precisar usar `sudo` para salvar arquivos:
 
-1. **Verifique se as variáveis UID/GID estão configuradas:**
+1. **Verifique se as variáveis HOST_UID/HOST_GID estão configuradas:**
    ```bash
-   echo $UID
-   echo $GID
+   echo $HOST_UID
+   echo $HOST_GID
    ```
 
 2. **Reconstrua os containers com as variáveis corretas:**
    ```bash
-   export UID=$(id -u)
-   export GID=$(id -g)
+   export HOST_UID=$(id -u)
+   export HOST_GID=$(id -g)
    docker-compose down
    docker-compose build --no-cache
    docker-compose up -d
@@ -316,9 +316,9 @@ Se você encontrar erros como "Failed to save ... insufficient permissions" ou p
 ### Arquivos criados como root
 
 Se arquivos forem criados como `root:root`, isso significa que os containers não estão usando o UID/GID correto. Certifique-se de:
-- Ter as variáveis `UID` e `GID` exportadas antes de executar `docker-compose`
+- Ter as variáveis `HOST_UID` e `HOST_GID` exportadas antes de executar `docker-compose`
 - Ter reconstruído os containers após configurar as variáveis
-- Verificar que o `docker-compose.yml` está usando `${UID:-1000}` e `${GID:-1000}`
+- Verificar que o `docker-compose.yml` está usando `${HOST_UID:-1000}` e `${HOST_GID:-1000}`
 
 ## 🧪 Testes
 
