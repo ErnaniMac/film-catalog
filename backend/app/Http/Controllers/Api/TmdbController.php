@@ -31,25 +31,58 @@ class TmdbController extends Controller
             ], 500);
         }
 
-        // Normalizar a query: remover acentos e caracteres especiais para melhor busca
-        $normalizedQuery = $this->normalizeQuery($query);
-        
-        // Cache key usando query normalizada
-        $cacheKey = "tmdb_search_" . md5($normalizedQuery) . "_page_{$page}";
+        // Busca aproximada: fazer múltiplas buscas com variações da query
+        $searchQueries = $this->generateSearchVariations($query);
+        $allResults = [];
+        $seenIds = [];
 
-        $response = Cache::remember($cacheKey, 3600, function () use ($apiUrl, $apiKey, $normalizedQuery, $page) {
-            return Http::withHeaders([
-                'Authorization' => "Bearer {$apiKey}",
-                'Accept' => 'application/json',
-            ])->get("{$apiUrl}/search/movie", [
-                'query' => $normalizedQuery,
-                'page' => $page,
-                'language' => 'pt-BR',
-                'include_adult' => false,
-                // A API do TMDB já faz busca aproximada por padrão
-                // Não precisa de parâmetros adicionais para busca fuzzy
-            ]);
+        foreach ($searchQueries as $searchQuery) {
+            $cacheKey = "tmdb_search_" . md5($searchQuery) . "_page_{$page}";
+            
+            $response = Cache::remember($cacheKey, 3600, function () use ($apiUrl, $apiKey, $searchQuery, $page) {
+                return Http::withHeaders([
+                    'Authorization' => "Bearer {$apiKey}",
+                    'Accept' => 'application/json',
+                ])->get("{$apiUrl}/search/movie", [
+                    'query' => $searchQuery,
+                    'page' => $page,
+                    'language' => 'pt-BR',
+                    'include_adult' => false,
+                ]);
+            });
+
+            if ($response->successful()) {
+                $data = $response->json();
+                if (isset($data['results'])) {
+                    foreach ($data['results'] as $movie) {
+                        // Evitar duplicatas
+                        if (!in_array($movie['id'], $seenIds)) {
+                            $allResults[] = $movie;
+                            $seenIds[] = $movie['id'];
+                        }
+                    }
+                }
+            }
+        }
+
+        // Ordenar por relevância (popularidade e vote_average)
+        usort($allResults, function ($a, $b) {
+            $scoreA = ($a['popularity'] ?? 0) + (($a['vote_average'] ?? 0) * 10);
+            $scoreB = ($b['popularity'] ?? 0) + (($b['vote_average'] ?? 0) * 10);
+            return $scoreB <=> $scoreA;
         });
+
+        // Limitar resultados por página (20 por página)
+        $perPage = 20;
+        $offset = ($page - 1) * $perPage;
+        $paginatedResults = array_slice($allResults, $offset, $perPage);
+
+        return response()->json([
+            'page' => $page,
+            'results' => $paginatedResults,
+            'total_results' => count($allResults),
+            'total_pages' => ceil(count($allResults) / $perPage),
+        ], 200);
 
         if ($response->failed()) {
             return response()->json([
@@ -61,16 +94,37 @@ class TmdbController extends Controller
     }
 
     /**
-     * Normaliza a query para melhor busca
-     * A API do TMDB já faz busca aproximada, mas normalizamos para melhorar resultados
+     * Gera variações da query para busca aproximada
      */
-    private function normalizeQuery(string $query): string
+    private function generateSearchVariations(string $query): array
     {
-        // Remove espaços extras
-        $query = preg_replace('/\s+/', ' ', trim($query));
+        $variations = [];
         
-        // A API do TMDB já faz busca fuzzy/aproximada por padrão
-        // Não precisamos remover acentos pois a API trata isso automaticamente
-        return $query;
+        // Query original
+        $variations[] = $query;
+        
+        // Query em minúsculas
+        $variations[] = strtolower($query);
+        
+        // Query em maiúsculas
+        $variations[] = strtoupper($query);
+        
+        // Query com primeira letra maiúscula
+        $variations[] = ucfirst(strtolower($query));
+        
+        // Se a query tem múltiplas palavras, buscar também por cada palavra individualmente
+        $words = explode(' ', trim($query));
+        if (count($words) > 1) {
+            foreach ($words as $word) {
+                if (strlen(trim($word)) >= 3) {
+                    $variations[] = trim($word);
+                }
+            }
+        }
+        
+        // Remover duplicatas e valores vazios
+        $variations = array_unique(array_filter($variations));
+        
+        return $variations;
     }
 }
