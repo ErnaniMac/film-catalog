@@ -34,7 +34,8 @@
       <p>Buscando filmes...</p>
     </div>
 
-    <div v-else-if="filmStore.movies.length > 0" class="movies-grid">
+    <template v-else-if="filmStore.movies.length > 0">
+    <div class="movies-grid">
       <div
         v-for="movie in filmStore.movies"
         :key="movie.id"
@@ -374,6 +375,7 @@ function openSynopsisModal(movie) {
 .overview.truncated {
   display: -webkit-box;
   -webkit-line-clamp: 5;
+  line-clamp: 5;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
