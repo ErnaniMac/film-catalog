@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -13,12 +14,16 @@ class WelcomeEmail extends Mailable
 {
     use Queueable, SerializesModels;
 
+    public User $user;
+    public string $verificationUrl;
+
     /**
      * Create a new message instance.
      */
-    public function __construct()
+    public function __construct(User $user, string $verificationUrl)
     {
-        //
+        $this->user = $user;
+        $this->verificationUrl = $verificationUrl;
     }
 
     /**
@@ -27,7 +32,7 @@ class WelcomeEmail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Welcome Email',
+            subject: 'Bem-vindo ao Catálogo de Filmes - Verifique seu e-mail',
         );
     }
 
@@ -37,7 +42,8 @@ class WelcomeEmail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'view.name',
+            html: 'emails.welcome',
+            text: 'emails.welcome-text',
         );
     }
 

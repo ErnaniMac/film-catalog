@@ -4,12 +4,9 @@ FROM node:18-alpine
 ARG USER_ID=1000
 ARG GROUP_ID=1000
 
-# Install sudo and shadow for user management
-RUN apk add --no-cache sudo shadow
-
-# Create user with same UID/GID as host user
-RUN groupadd -g ${GROUP_ID} appuser || true \
-    && useradd -u ${USER_ID} -g ${GROUP_ID} -m -s /bin/sh appuser || true \
+# Create user with same UID/GID as host user (Alpine uses addgroup/adduser)
+RUN addgroup -g ${GROUP_ID} -S appuser || true \
+    && adduser -u ${USER_ID} -G appuser -S -s /bin/sh appuser || true \
     && mkdir -p /app \
     && chown -R appuser:appuser /app
 
