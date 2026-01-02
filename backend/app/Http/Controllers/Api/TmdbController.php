@@ -57,53 +57,20 @@ class TmdbController extends Controller
             ], $response->status());
         }
 
-        $data = $response->json();
-        
-        // Filtrar resultados para garantir que contenham a palavra buscada (busca mais flexível)
-        if (isset($data['results']) && !empty($query)) {
-            $searchTerms = explode(' ', strtolower($normalizedQuery));
-            $data['results'] = array_filter($data['results'], function ($movie) use ($searchTerms, $normalizedQuery) {
-                $title = strtolower($movie['title'] ?? '');
-                $overview = strtolower($movie['overview'] ?? '');
-                $searchText = $title . ' ' . $overview;
-                
-                // Verifica se pelo menos um termo da busca está presente
-                foreach ($searchTerms as $term) {
-                    if (strlen($term) >= 3 && str_contains($searchText, $term)) {
-                        return true;
-                    }
-                }
-                
-                // Se o termo é muito curto, aceita se estiver no início do título
-                if (strlen($normalizedQuery) < 3) {
-                    return str_starts_with($title, strtolower($normalizedQuery));
-                }
-                
-                return true; // Mantém todos os resultados da API (já são relevantes)
-            });
-            
-            // Reindexar array após filtro
-            $data['results'] = array_values($data['results']);
-            $data['total_results'] = count($data['results']);
-        }
-
-        return response()->json($data, 200);
+        return response()->json($response->json(), 200);
     }
 
     /**
-     * Normaliza a query removendo acentos e caracteres especiais
+     * Normaliza a query para melhor busca
+     * A API do TMDB já faz busca aproximada, mas normalizamos para melhorar resultados
      */
     private function normalizeQuery(string $query): string
     {
-        // Remove acentos
-        $query = iconv('UTF-8', 'ASCII//TRANSLIT', $query);
+        // Remove espaços extras
+        $query = preg_replace('/\s+/', ' ', trim($query));
         
-        // Remove caracteres especiais, mantém apenas letras, números e espaços
-        $query = preg_replace('/[^a-zA-Z0-9\s]/', '', $query);
-        
-        // Remove espaços múltiplos
-        $query = preg_replace('/\s+/', ' ', $query);
-        
-        return trim($query);
+        // A API do TMDB já faz busca fuzzy/aproximada por padrão
+        // Não precisamos remover acentos pois a API trata isso automaticamente
+        return $query;
     }
 }
