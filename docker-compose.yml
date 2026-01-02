@@ -84,7 +84,7 @@ services:
     container_name: film-catalog-node
     restart: unless-stopped
     working_dir: /app
-    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    # Don't set user here - let entrypoint handle it as root first, then switch to appuser
     volumes:
       - ./frontend:/app
       - /app/node_modules
