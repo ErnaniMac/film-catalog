@@ -396,10 +396,9 @@ function openSynopsisModal(movie) {
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-height: calc(1.6em * 5);
   word-break: break-word;
-  /* Garantir que funcione em todos os navegadores */
-  height: calc(1.6em * 5);
+  /* Forçar altura máxima para garantir 5 linhas */
+  max-height: 8em; /* 1.6em * 5 = 8em */
 }
 
 .read-more-btn {
