@@ -56,7 +56,7 @@
           <div class="overview-container">
             <p 
               class="overview" 
-              :class="{ 'truncated': movie.overview && movie.overview.length > 200 }"
+              :class="{ 'truncated': movie.overview && shouldTruncate(movie.overview) }"
             >
               {{ movie.overview || 'Sem descrição disponível' }}
             </p>
@@ -228,14 +228,14 @@ function formatDate(dateString) {
 
 function shouldTruncate(text) {
   if (!text || text.trim().length === 0) return false
-  // Verifica se o texto tem mais de aproximadamente 5 linhas
-  // Considerando ~70-80 caracteres por linha com line-height 1.6
-  // 5 linhas = aproximadamente 350-400 caracteres
-  // Mas vamos usar uma verificação mais precisa baseada em quebras de linha e comprimento
-  const lines = text.split('\n').length
-  const avgCharsPerLine = 75
-  const estimatedLines = Math.ceil(text.length / avgCharsPerLine)
-  return estimatedLines > 5 || lines > 5 || text.length > 350
+  // Aproximadamente 5 linhas considerando:
+  // - line-height: 1.6
+  // - font-size padrão (~14-16px)
+  // - largura do card (~250-300px)
+  // - aproximadamente 50-60 caracteres por linha
+  // Total: ~250-300 caracteres para 5 linhas
+  // Usamos um valor conservador de 250 caracteres
+  return text.length > 250
 }
 
 function openSynopsisModal(movie) {
@@ -386,6 +386,7 @@ function openSynopsisModal(movie) {
   line-height: 1.6;
   margin-bottom: 0.5rem;
   word-wrap: break-word;
+  display: block;
 }
 
 .overview.truncated {
@@ -397,6 +398,8 @@ function openSynopsisModal(movie) {
   text-overflow: ellipsis;
   max-height: calc(1.6em * 5);
   word-break: break-word;
+  /* Garantir que funcione em todos os navegadores */
+  height: calc(1.6em * 5);
 }
 
 .read-more-btn {
