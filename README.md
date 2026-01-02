@@ -181,7 +181,7 @@ docker-compose up -d
 
 - **Frontend**: http://localhost:5173
 - **Backend API**: http://localhost:8000/api
-- **MySQL**: localhost:3306
+- **MySQL**: localhost:3307
 
 ### Parar o projeto
 

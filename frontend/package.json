@@ -12,7 +12,8 @@
     "vue-router": "^4.2.5",
     "pinia": "^2.1.7",
     "axios": "^1.6.2",
-    "primevue": "^3.50.0",
+    "primevue": "^4.0.0",
+    "@primevue/themes": "^4.0.0",
     "primeicons": "^6.0.1",
     "dayjs": "^1.11.10",
     "lodash": "^4.17.21"
