@@ -7,6 +7,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class TmdbController extends Controller
 {
@@ -47,7 +48,7 @@ class TmdbController extends Controller
                 ]);
 
                 // Se a resposta falhou, não cachear
-                if ($httpResponse->failed()) {
+                if (!$httpResponse->successful()) {
                     throw new \Exception('TMDB API request failed');
                 }
 
@@ -55,7 +56,7 @@ class TmdbController extends Controller
             });
 
             // Verificar se a resposta foi bem-sucedida
-            if ($response->failed()) {
+            if (!$response->successful()) {
                 // Se falhou, limpar o cache para essa query e retornar erro
                 Cache::forget($cacheKey);
                 
@@ -87,7 +88,7 @@ class TmdbController extends Controller
             // Em caso de exceção, limpar cache e retornar erro
             Cache::forget($cacheKey);
             
-            \Log::error('TMDB API Error: ' . $e->getMessage(), [
+            Log::error('TMDB API Error: ' . $e->getMessage(), [
                 'query' => $query,
                 'page' => $page
             ]);
