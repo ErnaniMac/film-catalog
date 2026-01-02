@@ -4,11 +4,28 @@ FROM node:18-alpine
 ARG USER_ID=1000
 ARG GROUP_ID=1000
 
-# Create user with same UID/GID as host user (Alpine uses addgroup/adduser)
-RUN addgroup -g ${GROUP_ID} -S appuser || true \
-    && adduser -u ${USER_ID} -G appuser -S -s /bin/sh appuser || true \
-    && mkdir -p /app \
-    && chown -R appuser:appuser /app
+# Get existing group name if GID is already in use
+RUN EXISTING_GROUP=$(getent group ${GROUP_ID} 2>/dev/null | cut -d: -f1 || echo ""); \
+    if [ -z "$EXISTING_GROUP" ]; then \
+        addgroup -g ${GROUP_ID} appuser; \
+    else \
+        if [ "$EXISTING_GROUP" != "appuser" ]; then \
+            addgroup appuser || true; \
+            GROUP_NAME=appuser; \
+        else \
+            GROUP_NAME=appuser; \
+        fi; \
+    fi; \
+    EXISTING_USER=$(getent passwd ${USER_ID} 2>/dev/null | cut -d: -f1 || echo ""); \
+    if [ -z "$EXISTING_USER" ]; then \
+        adduser -u ${USER_ID} -G appuser -D -s /bin/sh appuser; \
+    else \
+        if [ "$EXISTING_USER" != "appuser" ]; then \
+            adduser -G appuser -D -s /bin/sh appuser || true; \
+        fi; \
+    fi; \
+    mkdir -p /app; \
+    chown -R appuser:appuser /app 2>/dev/null || chown -R ${USER_ID}:${GROUP_ID} /app
 
 WORKDIR /app
 
