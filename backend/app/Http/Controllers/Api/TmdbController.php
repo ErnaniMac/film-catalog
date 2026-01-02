@@ -48,12 +48,14 @@ class TmdbController extends Controller
                 ]);
 
                 // Verificar se a resposta foi bem-sucedida
-                if ($httpResponse->status() >= 400) {
-                    throw new \Exception('TMDB API request failed with status: ' . $httpResponse->status());
+                $statusCode = $httpResponse->getStatusCode();
+                if ($statusCode >= 400) {
+                    throw new \Exception('TMDB API request failed with status: ' . $statusCode);
                 }
 
                 // Retornar apenas os dados JSON
-                return $httpResponse->json();
+                $jsonData = $httpResponse->getBody()->getContents();
+                return json_decode($jsonData, true);
             });
 
             // Verificar se há resultados válidos - não cachear resultados vazios incorretos
