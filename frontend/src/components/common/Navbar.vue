@@ -2,8 +2,8 @@
   <nav class="navbar">
     <div class="navbar-content">
       <div class="navbar-brand">
-        <router-link to="/" class="brand-link">
-          <h2>Film Catalog</h2>
+        <router-link to="/films" class="brand-link">
+          <h2>Catálogo de Filmes</h2>
         </router-link>
       </div>
 

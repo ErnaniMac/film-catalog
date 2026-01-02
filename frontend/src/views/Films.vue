@@ -99,6 +99,7 @@
       :header="selectedMovie?.title || 'Sinopse'"
       :modal="true"
       :style="{ width: '600px' }"
+      :autoFocus="false"
     >
       <div class="synopsis-content">
         <p>{{ selectedMovie?.overview || 'Sem descrição disponível' }}</p>
