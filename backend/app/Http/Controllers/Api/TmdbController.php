@@ -31,58 +31,58 @@ class TmdbController extends Controller
             ], 500);
         }
 
-        // Busca aproximada: fazer múltiplas buscas com variações da query
-        $searchQueries = $this->generateSearchVariations($query);
-        $allResults = [];
-        $seenIds = [];
+        // A API do TMDB já faz busca parcial por padrão (busca por substring)
+        // Buscar com a query original - a API retorna títulos que contenham a palavra
+        $cacheKey = "tmdb_search_" . md5($query) . "_page_{$page}";
 
-        foreach ($searchQueries as $searchQuery) {
-            $cacheKey = "tmdb_search_" . md5($searchQuery) . "_page_{$page}";
-            
-            $response = Cache::remember($cacheKey, 3600, function () use ($apiUrl, $apiKey, $searchQuery, $page) {
-                return Http::withHeaders([
-                    'Authorization' => "Bearer {$apiKey}",
-                    'Accept' => 'application/json',
-                ])->get("{$apiUrl}/search/movie", [
-                    'query' => $searchQuery,
-                    'page' => $page,
-                    'language' => 'pt-BR',
-                    'include_adult' => false,
-                ]);
-            });
-
-            if ($response->successful()) {
-                $data = $response->json();
-                if (isset($data['results'])) {
-                    foreach ($data['results'] as $movie) {
-                        // Evitar duplicatas
-                        if (!in_array($movie['id'], $seenIds)) {
-                            $allResults[] = $movie;
-                            $seenIds[] = $movie['id'];
-                        }
-                    }
-                }
-            }
-        }
-
-        // Ordenar por relevância (popularidade e vote_average)
-        usort($allResults, function ($a, $b) {
-            $scoreA = ($a['popularity'] ?? 0) + (($a['vote_average'] ?? 0) * 10);
-            $scoreB = ($b['popularity'] ?? 0) + (($b['vote_average'] ?? 0) * 10);
-            return $scoreB <=> $scoreA;
+        $response = Cache::remember($cacheKey, 3600, function () use ($apiUrl, $apiKey, $query, $page) {
+            return Http::withHeaders([
+                'Authorization' => "Bearer {$apiKey}",
+                'Accept' => 'application/json',
+            ])->get("{$apiUrl}/search/movie", [
+                'query' => $query,
+                'page' => $page,
+                'language' => 'pt-BR',
+                'include_adult' => false,
+            ]);
         });
 
-        // Limitar resultados por página (20 por página)
-        $perPage = 20;
-        $offset = ($page - 1) * $perPage;
-        $paginatedResults = array_slice($allResults, $offset, $perPage);
+        if ($response->failed()) {
+            return response()->json([
+                'error' => 'Erro ao buscar filmes na API TMDB'
+            ], $response->status());
+        }
 
-        return response()->json([
-            'page' => $page,
-            'results' => $paginatedResults,
-            'total_results' => count($allResults),
-            'total_pages' => ceil(count($allResults) / $perPage),
-        ], 200);
+        $data = $response->json();
+        
+        // Filtrar resultados para garantir que contenham a palavra buscada (case-insensitive)
+        if (isset($data['results']) && !empty($query)) {
+            $searchTerm = strtolower($query);
+            $filteredResults = [];
+            
+            foreach ($data['results'] as $movie) {
+                $title = strtolower($movie['title'] ?? '');
+                $overview = strtolower($movie['overview'] ?? '');
+                
+                // Verifica se o título ou sinopse contém a palavra buscada
+                // str_contains faz busca parcial (substring)
+                if (str_contains($title, $searchTerm) || str_contains($overview, $searchTerm)) {
+                    $filteredResults[] = $movie;
+                }
+            }
+            
+            // Se não encontrou resultados com filtro, retorna os resultados originais da API
+            // (a API já faz busca parcial, então pode ter resultados relevantes)
+            if (empty($filteredResults)) {
+                $filteredResults = $data['results'];
+            }
+            
+            $data['results'] = $filteredResults;
+            $data['total_results'] = count($filteredResults);
+            $data['total_pages'] = ceil(count($filteredResults) / 20);
+        }
+
+        return response()->json($data, 200);
 
         if ($response->failed()) {
             return response()->json([
@@ -93,38 +93,4 @@ class TmdbController extends Controller
         return response()->json($response->json(), 200);
     }
 
-    /**
-     * Gera variações da query para busca aproximada
-     */
-    private function generateSearchVariations(string $query): array
-    {
-        $variations = [];
-        
-        // Query original
-        $variations[] = $query;
-        
-        // Query em minúsculas
-        $variations[] = strtolower($query);
-        
-        // Query em maiúsculas
-        $variations[] = strtoupper($query);
-        
-        // Query com primeira letra maiúscula
-        $variations[] = ucfirst(strtolower($query));
-        
-        // Se a query tem múltiplas palavras, buscar também por cada palavra individualmente
-        $words = explode(' ', trim($query));
-        if (count($words) > 1) {
-            foreach ($words as $word) {
-                if (strlen(trim($word)) >= 3) {
-                    $variations[] = trim($word);
-                }
-            }
-        }
-        
-        // Remover duplicatas e valores vazios
-        $variations = array_unique(array_filter($variations));
-        
-        return $variations;
-    }
 }
