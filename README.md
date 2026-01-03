@@ -313,6 +313,25 @@ Se você encontrar erros como "Failed to save ... insufficient permissions" ou p
    sudo chown -R $(id -u):$(id -g) backend/ frontend/
    ```
 
+### Problema: Precisa de sudo para salvar arquivos
+
+Se você precisa de `sudo` para salvar arquivos editados no Cursor/IDE, os arquivos estão com proprietário incorreto.
+
+**Solução rápida:**
+```bash
+# Execute o script de correção (vai pedir senha do sudo)
+./fix-permissions-now.sh
+```
+
+Ou manualmente:
+```bash
+sudo chown -R $(id -u):$(id -g) frontend/ backend/
+find frontend/ -type d -exec chmod 755 {} \;
+find frontend/ -type f ! -path "*/node_modules/*" -exec chmod 644 {} \;
+find backend/ -type d -exec chmod 755 {} \;
+find backend/ -type f -exec chmod 644 {} \;
+```
+
 ### Arquivos criados como root ou com proprietário incorreto
 
 Se arquivos forem criados como `root:root` ou com outro proprietário (ex: `1001:docker`), isso significa que os containers não estão usando o UID/GID correto. 
