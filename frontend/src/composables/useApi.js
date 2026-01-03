@@ -1,6 +1,48 @@
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
 
+// Interceptar XMLHttpRequest antes do axios para suprimir logs 422
+if (typeof window !== 'undefined' && window.XMLHttpRequest) {
+  const OriginalXHR = window.XMLHttpRequest
+  window.XMLHttpRequest = function() {
+    const xhr = new OriginalXHR()
+    const originalOpen = xhr.open
+    const originalSend = xhr.send
+    let requestUrl = ''
+    let requestMethod = ''
+    
+    xhr.open = function(method, url, ...args) {
+      requestMethod = method
+      requestUrl = url
+      return originalOpen.apply(this, [method, url, ...args])
+    }
+    
+    xhr.send = function(...args) {
+      const originalOnReadyStateChange = xhr.onreadystatechange
+      
+      xhr.onreadystatechange = function() {
+        // Suprimir logs para status 422
+        if (xhr.readyState === 4 && xhr.status === 422) {
+          // Não fazer nada - silenciar completamente
+          // Mas ainda permitir que o axios receba a resposta
+          if (originalOnReadyStateChange) {
+            originalOnReadyStateChange.apply(this, arguments)
+          }
+          return
+        }
+        
+        if (originalOnReadyStateChange) {
+          originalOnReadyStateChange.apply(this, arguments)
+        }
+      }
+      
+      return originalSend.apply(this, args)
+    }
+    
+    return xhr
+  }
+}
+
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
   headers: {
