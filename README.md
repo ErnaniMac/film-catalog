@@ -294,69 +294,60 @@ film-catalog/
 
 Se você encontrar erros como "Failed to save ... insufficient permissions" ou precisar usar `sudo` para salvar arquivos:
 
-1. **Verifique se as variáveis HOST_UID/HOST_GID estão configuradas:**
-   ```bash
-   echo $HOST_UID
-   echo $HOST_GID
-   ```
+#### Solução Rápida
 
-2. **Reconstrua os containers com as variáveis corretas:**
-   ```bash
-   export HOST_UID=$(id -u)
-   export HOST_GID=$(id -g)
-   docker-compose down
-   docker-compose build --no-cache
-   docker-compose up -d
-   ```
+Execute o script de correção de permissões:
 
-3. **Use o script de correção de permissões:**
-   ```bash
-   ./fix-permissions.sh
-   ```
-
-4. **Corrija manualmente se necessário:**
-   ```bash
-   sudo chown -R $(id -u):$(id -g) backend/ frontend/
-   ```
-
-### Problema: Precisa de sudo para salvar arquivos
-
-Se você precisa de `sudo` para salvar arquivos editados no Cursor/IDE, os arquivos estão com proprietário incorreto.
-
-**Solução rápida:**
 ```bash
-# Execute o script de correção (vai pedir senha do sudo)
-./fix-permissions-now.sh
-```
-
-Ou manualmente:
-```bash
-sudo chown -R $(id -u):$(id -g) frontend/ backend/
-find frontend/ -type d -exec chmod 755 {} \;
-find frontend/ -type f ! -path "*/node_modules/*" -exec chmod 644 {} \;
-find backend/ -type d -exec chmod 755 {} \;
-find backend/ -type f -exec chmod 644 {} \;
-```
-
-### Arquivos criados como root ou com proprietário incorreto
-
-Se arquivos forem criados como `root:root` ou com outro proprietário (ex: `1001:docker`), isso significa que os containers não estão usando o UID/GID correto. 
-
-**Solução rápida:**
-```bash
-# Para frontend
-./fix-frontend-permissions.sh
-
-# Para backend
 ./fix-permissions.sh
 ```
 
-**Solução permanente:**
-1. Certifique-se de ter as variáveis `HOST_UID` e `HOST_GID` exportadas antes de executar `docker-compose`:
+Este script corrige automaticamente:
+- ✅ Ownership de todos os arquivos (backend e frontend) para seu usuário
+- ✅ Permissões corretas para diretórios e arquivos
+- ✅ Permissões especiais para `storage` e `bootstrap/cache` do Laravel (775/664)
+- ✅ Permissões especiais para `node_modules` (binários executáveis)
+
+**Nota:** O script requer `sudo` e vai pedir sua senha.
+
+#### Verificação
+
+1. **Verifique o `.env.docker`:**
    ```bash
-   export HOST_UID=$(id -u)
-   export HOST_GID=$(id -g)
-   docker-compose up -d --build
+   cat .env.docker
+   id
+   ```
+   
+   Os valores devem corresponder ao seu usuário.
+
+2. **Se necessário, atualize o `.env.docker`:**
+   ```bash
+   echo "HOST_UID=$(id -u)" > .env.docker
+   echo "HOST_GID=$(id -g)" >> .env.docker
+   ```
+
+#### Após Corrigir Permissões
+
+Reinicie os containers:
+
+```bash
+source .env.docker && docker-compose restart
+```
+
+#### Solução Permanente
+
+Para evitar o problema no futuro:
+
+1. Sempre use `source .env.docker` antes de comandos `docker-compose`:
+   ```bash
+   source .env.docker && docker-compose up -d
+   ```
+
+2. O entrypoint dos containers corrige automaticamente as permissões ao iniciar, mas arquivos existentes podem precisar de correção manual uma vez.
+
+3. Se criar novos arquivos manualmente e tiver problemas, execute novamente:
+   ```bash
+   ./fix-permissions.sh
    ```
 
 2. Reconstrua os containers após configurar as variáveis:
