@@ -639,7 +639,7 @@ film-catalog/
 │   └── package.json
 │
 ├── docker-compose.yml       # Configuração Docker
-├── .env.docker              # UID/GID para Docker
+├── .env                     # Configurações do Docker (portas, MySQL, UID/GID)
 ├── fix-permissions.sh       # Script de correção de permissões
 └── README.md
 ```
@@ -724,7 +724,7 @@ Este script corrige automaticamente:
 Reinicie os containers:
 
 ```bash
-source .env.docker && docker-compose restart
+docker-compose restart
 ```
 
 #### Solução Permanente

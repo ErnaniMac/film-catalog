@@ -7,12 +7,12 @@
 
 set -e
 
-# Carregar .env.docker se existir (para usar HOST_UID/HOST_GID configurados)
-if [ -f ".env.docker" ]; then
-    source .env.docker
+# Carregar .env se existir (para usar HOST_UID/HOST_GID configurados)
+if [ -f ".env" ]; then
+    source .env
 fi
 
-# Obter UID/GID do usuário atual ou do .env.docker
+# Obter UID/GID do usuário atual ou do .env
 HOST_UID=${HOST_UID:-$(id -u)}
 HOST_GID=${HOST_GID:-$(id -g)}
 
@@ -116,7 +116,7 @@ echo "=========================================="
 echo ""
 echo "Próximos passos:"
 echo "  1. Reinicie os containers:"
-echo "     source .env.docker && docker-compose restart"
+echo "     docker-compose restart"
 echo ""
 echo "  2. Verifique se pode salvar arquivos sem sudo"
 echo ""
