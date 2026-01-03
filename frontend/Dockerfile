@@ -43,13 +43,30 @@ if [ "$(id -u)" = "0" ] && [ -d "/app" ]; then
     
     # Set proper permissions - directories need execute bit
     find /app -type d -exec chmod 755 {} \; 2>/dev/null || true
-    find /app -type f -exec chmod 644 {} \; 2>/dev/null || true
     
     # Ensure node_modules directory exists and is writable
-    mkdir -p /app/node_modules 2>/dev/null || true
-    chown -R appuser:appuser /app/node_modules 2>/dev/null || true
-    find /app/node_modules -type d -exec chmod 755 {} \; 2>/dev/null || true
-    find /app/node_modules -type f -exec chmod 644 {} \; 2>/dev/null || true
+    if [ -d "/app/node_modules" ]; then
+        chown -R appuser:appuser /app/node_modules 2>/dev/null || true
+        find /app/node_modules -type d -exec chmod 755 {} \; 2>/dev/null || true
+        
+        # PRIMEIRO: dar permissão de execução aos binários
+        # Corrigir permissões dos arquivos de destino dos links simbólicos (binários JS)
+        find /app/node_modules -type f -path "*/bin/*" -exec chmod 755 {} \; 2>/dev/null || true
+        find /app/node_modules -type f -path "*/.bin/*" -exec chmod 755 {} \; 2>/dev/null || true
+        # Corrigir links simbólicos e arquivos executáveis em .bin
+        if [ -d "/app/node_modules/.bin" ]; then
+            find /app/node_modules/.bin -type l -exec chmod 755 {} \; 2>/dev/null || true
+            find /app/node_modules/.bin -type f -exec chmod 755 {} \; 2>/dev/null || true
+        fi
+        # DEPOIS: aplicar chmod 644 apenas em arquivos que NÃO são binários
+        find /app/node_modules -type f ! -path "*/.bin/*" ! -path "*/bin/*" -exec chmod 644 {} \; 2>/dev/null || true
+        # GARANTIR: aplicar chmod 755 novamente nos binários DEPOIS do chmod 644 (para garantir)
+        find /app/node_modules -type f -path "*/bin/*" -exec chmod 755 {} \; 2>/dev/null || true
+        find /app/node_modules -type f -path "*/.bin/*" -exec chmod 755 {} \; 2>/dev/null || true
+    fi
+    
+    # Aplicar chmod 644 em arquivos do app (exceto node_modules que já foi tratado)
+    find /app -type f ! -path "*/node_modules/*" -exec chmod 644 {} \; 2>/dev/null || true
     
     # Make sure package files are writable
     [ -f "/app/package.json" ] && chown appuser:appuser /app/package.json && chmod 644 /app/package.json 2>/dev/null || true
@@ -58,6 +75,12 @@ if [ "$(id -u)" = "0" ] && [ -d "/app" ]; then
     
     # Fix src directory permissions
     [ -d "/app/src" ] && chown -R appuser:appuser /app/src && find /app/src -type d -exec chmod 755 {} \; && find /app/src -type f -exec chmod 644 {} \; 2>/dev/null || true
+fi
+
+# Fix binary permissions one more time before switching to appuser
+if [ "$(id -u)" = "0" ] && [ -d "/app/node_modules" ]; then
+    find /app/node_modules -type f -path "*/bin/*" -exec chmod 755 {} \; 2>/dev/null || true
+    find /app/node_modules -type f -path "*/.bin/*" -exec chmod 755 {} \; 2>/dev/null || true
 fi
 
 # Switch to appuser and execute command
@@ -86,5 +109,16 @@ COPY --chown=appuser:appuser . .
 # Expose port
 EXPOSE 5173
 
+# Create startup script that fixes permissions and starts npm
+RUN echo '#!/bin/sh' > /usr/local/bin/start-dev.sh && \
+    echo 'set -e' >> /usr/local/bin/start-dev.sh && \
+    echo '# Fix permissions of binaries before starting' >> /usr/local/bin/start-dev.sh && \
+    echo 'if [ -d "/app/node_modules" ]; then' >> /usr/local/bin/start-dev.sh && \
+    echo '  find /app/node_modules -type f -path "*/bin/*" -exec chmod 755 {} \; 2>/dev/null || true' >> /usr/local/bin/start-dev.sh && \
+    echo '  find /app/node_modules -type f -path "*/.bin/*" -exec chmod 755 {} \; 2>/dev/null || true' >> /usr/local/bin/start-dev.sh && \
+    echo 'fi' >> /usr/local/bin/start-dev.sh && \
+    echo 'exec npm run dev -- --host 0.0.0.0' >> /usr/local/bin/start-dev.sh && \
+    chmod +x /usr/local/bin/start-dev.sh
+
 # Start development server
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+CMD ["/usr/local/bin/start-dev.sh"]
