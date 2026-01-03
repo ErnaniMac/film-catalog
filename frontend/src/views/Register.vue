@@ -134,15 +134,22 @@ async function handleRegister() {
       }, 3000)
     }
   } catch (err) {
-    console.error('Erro ao registrar:', err)
+    // 422 é uma resposta de validação, não um erro do sistema
+    // Não logar como erro no console para evitar poluição
+    if (err.response?.status !== 422) {
+      console.error('Erro ao registrar:', err)
+    }
     
     if (err.response?.status === 500) {
       error.value = 'Erro interno do servidor. Verifique os logs ou tente novamente.'
-    } else if (err.response?.data?.errors) {
+    } else if (err.response?.status === 422 && err.response?.data?.errors) {
+      // Erro de validação - exibir mensagens de forma amigável
       const errors = err.response.data.errors
       error.value = Object.values(errors).flat().join(', ')
+    } else if (err.response?.data?.message) {
+      error.value = err.response.data.message
     } else {
-      error.value = err.response?.data?.message || 'Erro ao criar conta. Tente novamente.'
+      error.value = 'Erro ao criar conta. Tente novamente.'
     }
   } finally {
     loading.value = false

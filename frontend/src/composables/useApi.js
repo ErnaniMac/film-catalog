@@ -32,6 +32,15 @@ api.interceptors.response.use(
       authStore.logout()
       window.location.href = '/login'
     }
+    
+    // Não logar erros de validação (422) como erros no console
+    // Eles são respostas válidas do servidor indicando problemas de validação
+    if (error.response?.status === 422) {
+      // Silenciar o log do axios para 422, mas ainda rejeitar a promise
+      // para que o componente possa tratar a validação
+      return Promise.reject(error)
+    }
+    
     return Promise.reject(error)
   }
 )
