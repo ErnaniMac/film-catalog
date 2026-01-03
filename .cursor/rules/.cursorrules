@@ -401,7 +401,7 @@ docker-compose exec laravel php artisan migrate
 - [ ] Não há console.log ou var_dump esquecidos
 - [ ] Variáveis de ambiente não foram commitadas
 - [ ] Mensagem de commit segue o padrão Conventional Commits
-- [ ] Mensagem de commit tem no máximo 120 caracteres
+- [ ] **Mensagem de commit tem no máximo 120 caracteres (VERIFICAR SEMPRE)**
 - [ ] Documentação atualizada se necessário
 - [ ] Código foi revisado
 
