@@ -415,6 +415,23 @@ docker-compose exec laravel php artisan migrate
 - **Nunca** confie apenas na validação do frontend
 - **Sempre** trate erros adequadamente
 - **Sempre** documente decisões importantes
+- **SEMPRE** respeite o limite de 120 caracteres nas mensagens de commit
+
+## ⚠️ REGRA CRÍTICA: Mensagens de Commit
+
+**NUNCA faça commit com mensagem que ultrapasse 120 caracteres na primeira linha.**
+
+Antes de executar `git commit`, verifique o tamanho da mensagem. Se ultrapassar 120 caracteres:
+1. Encurte a primeira linha (máximo 120 caracteres)
+2. Use o corpo do commit (após linha em branco) para detalhes
+3. Exemplo: `git commit -m "fix: corrige permissões" -m "Detalhes adicionais aqui..."`
+
+**Exemplo de como encurtar:**
+```
+❌ fix: corrige problema de permissões no frontend que estava impedindo o Vite de criar arquivos temporários
+
+✅ fix: corrige permissões do frontend para Vite criar arquivos temporários
+```
 
 Este arquivo deve ser atualizado conforme o projeto evolui e novas convenções são estabelecidas.
 
