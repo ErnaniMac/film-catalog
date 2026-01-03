@@ -47,39 +47,69 @@ api.interceptors.response.use(
   }
 )
 
-// Interceptar console.error apenas para erros relacionados ao axios com status 422
-// Isso evita que erros de validação apareçam no console como erros
+// Interceptar console.error, console.log e console.warn para silenciar erros 422
+// Isso evita que erros de validação apareçam no console
 if (typeof window !== 'undefined') {
-  const originalConsoleError = console.error
-  console.error = function(...args) {
-    // Verificar se é um erro relacionado ao axios com status 422
-    if (args.length > 0) {
-      const firstArg = args[0]
-      
+  // Função auxiliar para verificar se é um erro 422
+  const is422Error = (...args) => {
+    if (args.length === 0) return false
+    
+    // Verificar todos os argumentos
+    for (const arg of args) {
       // Verificar se é um erro do axios com status 422
-      if (firstArg?.response?.status === 422 || firstArg?._isValidationError === true) {
-        // Silenciar erros 422 - não logar no console
-        return
+      if (arg?.response?.status === 422 || arg?._isValidationError === true) {
+        return true
       }
       
-      // Verificar se é uma mensagem de erro do axios contendo 422
-      if (typeof firstArg === 'string') {
-        // Verificar se é uma mensagem de erro HTTP do navegador com 422
-        const is422Error = /422|Unprocessable|validation/i.test(firstArg)
-        // Verificar se é uma requisição HTTP com 422
-        const isHttp422 = /POST|GET|PUT|DELETE|PATCH.*422/i.test(firstArg)
-        
-        if (is422Error || isHttp422) {
-          // Silenciar mensagens de erro 422
-          return
+      // Verificar se é uma string contendo 422 ou Unprocessable
+      if (typeof arg === 'string') {
+        const is422Pattern = /422|Unprocessable\s+Content|validation/i.test(arg)
+        const isHttp422 = /(POST|GET|PUT|DELETE|PATCH)\s+.*422/i.test(arg)
+        if (is422Pattern || isHttp422) {
+          return true
+        }
+      }
+      
+      // Verificar se é um objeto com mensagem contendo 422
+      if (arg && typeof arg === 'object') {
+        const message = arg.message || arg.msg || arg.error || ''
+        if (typeof message === 'string' && /422|Unprocessable/i.test(message)) {
+          return true
         }
       }
     }
     
-    // Para outros erros, usar o console.error normal
+    return false
+  }
+  
+  // Interceptar console.error
+  const originalConsoleError = console.error
+  console.error = function(...args) {
+    if (is422Error(...args)) {
+      return // Silenciar erros 422
+    }
     originalConsoleError.apply(console, args)
+  }
+  
+  // Interceptar console.log
+  const originalConsoleLog = console.log
+  console.log = function(...args) {
+    if (is422Error(...args)) {
+      return // Silenciar logs 422
+    }
+    originalConsoleLog.apply(console, args)
+  }
+  
+  // Interceptar console.warn
+  const originalConsoleWarn = console.warn
+  console.warn = function(...args) {
+    if (is422Error(...args)) {
+      return // Silenciar warnings 422
+    }
+    originalConsoleWarn.apply(console, args)
   }
 }
 
 export default api
+
 
