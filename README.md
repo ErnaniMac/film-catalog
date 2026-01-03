@@ -118,30 +118,36 @@ VITE_API_URL=http://localhost:8000/api
 
 ### 3. Configure UID/GID para Docker (Opcional mas recomendado)
 
-Para evitar problemas de permissão, configure o UID e GID do seu usuário:
+**✅ O arquivo `.env.docker` já foi criado automaticamente com seus valores!**
 
+Para evitar problemas de permissão, o arquivo `.env.docker` contém seu UID e GID:
 ```bash
-# Verifique seu UID e GID
-id
+# Verificar valores configurados
+cat .env.docker
+# Deve mostrar:
+# HOST_UID=1000
+# HOST_GID=1000
+```
 
-# Crie ou edite o arquivo .env.docker na raiz do projeto
+Se precisar atualizar (após mudar de usuário ou sistema):
+```bash
 echo "HOST_UID=$(id -u)" > .env.docker
 echo "HOST_GID=$(id -g)" >> .env.docker
-
-# Ou exporte as variáveis antes de iniciar os containers
-export HOST_UID=$(id -u)
-export HOST_GID=$(id -g)
 ```
 
 ### 4. Inicie os containers Docker
 
 ```bash
-# Se você exportou HOST_UID e HOST_GID, use:
-docker-compose up -d --build
-
-# Ou se criou .env.docker, carregue antes:
+# IMPORTANTE: Carregue o .env.docker antes de iniciar os containers
 source .env.docker && docker-compose up -d --build
+
+# Ou exporte manualmente:
+export HOST_UID=$(id -u)
+export HOST_GID=$(id -g)
+docker-compose up -d --build
 ```
+
+**Nota:** O `docker-compose` não carrega automaticamente o `.env.docker`. Você precisa fazer `source .env.docker` antes de executar comandos do docker-compose.
 
 ### 5. Configure o Laravel
 
