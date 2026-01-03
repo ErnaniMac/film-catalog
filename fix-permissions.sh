@@ -28,6 +28,11 @@ if [ -d "frontend" ]; then
     sudo chown -R $HOST_UID:$HOST_GID frontend/
     find frontend/ -type d -exec chmod 755 {} \;
     find frontend/ -type f -exec chmod 644 {} \;
+    
+    # Garantir que node_modules seja excluído do chown (é volume do Docker)
+    if [ -d "frontend/node_modules" ]; then
+        echo "Note: node_modules será gerenciado pelo container"
+    fi
 fi
 
 echo "Permissions fixed!"
