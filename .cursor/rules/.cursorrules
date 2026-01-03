@@ -433,5 +433,41 @@ Antes de executar `git commit`, verifique o tamanho da mensagem. Se ultrapassar 
 ✅ fix: corrige permissões do frontend para Vite criar arquivos temporários
 ```
 
+---
+
+## 🚫 REGRA DE COMMITS AUTOMÁTICOS
+
+**NUNCA faça commits automaticamente.**
+
+**IMPORTANTE**: O agente NÃO deve fazer commits Git automaticamente após fazer alterações nos arquivos.
+
+### Regras de Commit:
+
+1. **NUNCA execute `git commit` automaticamente**
+2. **NUNCA execute `git add` seguido de `git commit` sem solicitação explícita**
+3. **Apenas faça commit quando o usuário digitar explicitamente: `<commit now>`**
+4. **Quando o usuário solicitar commit com `<commit now>`, então:**
+   - Execute `git add -A` para adicionar todas as alterações
+   - Execute `git commit` com mensagem seguindo Conventional Commits
+   - **SEMPRE respeite o limite de 120 caracteres na mensagem**
+   - Use mensagens descritivas e claras
+
+### Comportamento Esperado:
+
+- ✅ Fazer alterações nos arquivos quando solicitado
+- ✅ Preparar mensagens de commit quando solicitado
+- ❌ **NÃO fazer commit automaticamente após alterações**
+- ✅ Fazer commit **APENAS** quando o usuário digitar `<commit now>`
+
+### Exemplo de Uso:
+
+**Usuário**: "Corrija o bug no componente X"
+**Agente**: Faz as correções, mas **NÃO** faz commit
+
+**Usuário**: "<commit now>"
+**Agente**: Executa `git add -A && git commit -m "fix: corrige bug no componente X"`
+
+---
+
 Este arquivo deve ser atualizado conforme o projeto evolui e novas convenções são estabelecidas.
 
