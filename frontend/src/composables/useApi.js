@@ -149,17 +149,28 @@ if (typeof window !== 'undefined') {
       
       // Verificar se é uma string contendo 422 ou Unprocessable
       if (typeof arg === 'string') {
+        // Padrões mais abrangentes para capturar qualquer mensagem relacionada a 422
         const is422Pattern = /422|Unprocessable\s+Content|validation/i.test(arg)
-        const isHttp422 = /(POST|GET|PUT|DELETE|PATCH)\s+.*422/i.test(arg)
-        if (is422Pattern || isHttp422) {
+        // Capturar requisições HTTP com 422 (POST, GET, PUT, DELETE, PATCH)
+        const isHttp422 = /(POST|GET|PUT|DELETE|PATCH|OPTIONS)\s+.*422/i.test(arg)
+        // Capturar URLs com 422 no status
+        const isUrl422 = /http.*422/i.test(arg)
+        // Capturar qualquer mensagem que contenha "422" seguido de parênteses ou espaço
+        const isStatus422 = /\b422\b/i.test(arg)
+        
+        if (is422Pattern || isHttp422 || isUrl422 || isStatus422) {
           return true
         }
       }
       
       // Verificar se é um objeto com mensagem contendo 422
       if (arg && typeof arg === 'object') {
-        const message = arg.message || arg.msg || arg.error || ''
+        const message = arg.message || arg.msg || arg.error || arg.toString?.() || ''
         if (typeof message === 'string' && /422|Unprocessable/i.test(message)) {
+          return true
+        }
+        // Verificar propriedades do objeto
+        if (arg.status === 422 || arg.statusCode === 422) {
           return true
         }
       }
