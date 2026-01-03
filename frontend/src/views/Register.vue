@@ -131,7 +131,7 @@ async function handleRegister() {
       // Redirecionar para login após 3 segundos
       setTimeout(() => {
         router.push('/login')
-      }, 3000)
+      }, 4000)
     }
   } catch (err) {
     // 422 é uma resposta de validação, não um erro do sistema
