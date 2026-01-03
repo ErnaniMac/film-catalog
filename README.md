@@ -731,7 +731,7 @@ docker-compose restart
 
 Para evitar o problema no futuro:
 
-1. O Docker Compose lê automaticamente o arquivo `.env` na raiz:
+1. O Docker Compose usa `env_file` para ler dos arquivos `.env` do backend e frontend:
    ```bash
    docker-compose up -d
    ```
