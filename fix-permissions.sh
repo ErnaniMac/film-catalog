@@ -7,12 +7,12 @@
 
 set -e
 
-# Carregar .env se existir (para usar HOST_UID/HOST_GID configurados)
-if [ -f ".env" ]; then
-    source .env
+# Carregar backend/.env se existir (para usar HOST_UID/HOST_GID configurados)
+if [ -f "backend/.env" ]; then
+    source backend/.env
 fi
 
-# Obter UID/GID do usuário atual ou do .env
+# Obter UID/GID do usuário atual ou do backend/.env
 HOST_UID=${HOST_UID:-$(id -u)}
 HOST_GID=${HOST_GID:-$(id -g)}
 
