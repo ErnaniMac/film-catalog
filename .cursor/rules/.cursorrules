@@ -270,6 +270,13 @@ Use **Conventional Commits**:
 - `test:` - Adicionar ou corrigir testes
 - `chore:` - Tarefas de build, configuração, etc.
 
+### Regras de Mensagens de Commit
+
+- **Máximo de 120 caracteres** na linha principal (subject)
+- Use o modo imperativo ("adiciona" não "adicionando" ou "adicionado")
+- Primeira linha deve ser clara e descritiva
+- Se necessário, adicione corpo do commit após linha em branco para detalhes
+
 Exemplos:
 ```
 feat: adiciona busca de filmes na API TMDB
@@ -277,6 +284,17 @@ fix: corrige validação de email no cadastro
 docs: atualiza README com instruções Docker
 refactor: reorganiza estrutura de stores Pinia
 test: adiciona testes para FavoriteController
+```
+
+**Exemplos de mensagens muito longas (evitar):**
+```
+❌ feat: adiciona funcionalidade completa de busca de filmes na API TMDB com cache e tratamento de erros
+✅ feat: adiciona busca de filmes na API TMDB
+
+Corpo do commit (opcional):
+- Implementa cache para reduzir chamadas à API
+- Adiciona tratamento de erros
+- Melhora performance da busca
 ```
 
 ---
