@@ -398,7 +398,8 @@ docker-compose exec laravel php artisan migrate
 - [ ] Testes passam (backend e frontend)
 - [ ] Não há console.log ou var_dump esquecidos
 - [ ] Variáveis de ambiente não foram commitadas
-- [ ] Mensagem de commit segue o padrão
+- [ ] Mensagem de commit segue o padrão Conventional Commits
+- [ ] Mensagem de commit tem no máximo 120 caracteres
 - [ ] Documentação atualizada se necessário
 - [ ] Código foi revisado
 
