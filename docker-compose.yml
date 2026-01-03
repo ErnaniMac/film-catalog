@@ -40,10 +40,13 @@ services:
     # Don't set user here - let entrypoint handle it as root first, then switch to appuser
     volumes:
       - ./backend:/var/www/html
+    env_file:
+      - ./backend/.env
     depends_on:
       - mysql
       - redis
     environment:
+      # Variáveis específicas do Docker (sobrescrevem o .env se necessário)
       DB_CONNECTION: ${DB_CONNECTION:-mysql}
       DB_HOST: ${DB_HOST:-mysql}
       DB_PORT: ${DB_PORT:-3306}
