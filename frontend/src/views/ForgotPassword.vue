@@ -52,6 +52,12 @@ const error = ref('')
 const success = ref('')
 
 async function handleSendResetLink() {
+  // Validar email antes de enviar
+  if (!email.value || !email.value.includes('@')) {
+    error.value = 'Por favor, insira um e-mail válido.'
+    return
+  }
+
   loading.value = true
   error.value = ''
   success.value = ''
@@ -66,7 +72,12 @@ async function handleSendResetLink() {
       email.value = ''
     }
   } catch (err) {
-    if (err.response?.data?.errors) {
+    console.error('Erro ao enviar link de recuperação:', err)
+    
+    // Tratar erro específico de método não permitido
+    if (err.response?.status === 405) {
+      error.value = 'Erro na requisição. Por favor, tente novamente.'
+    } else if (err.response?.data?.errors) {
       const errors = err.response.data.errors
       error.value = Object.values(errors).flat().join(', ')
     } else {
