@@ -34,11 +34,11 @@ if [ -d "frontend" ]; then
         echo "Fixing node_modules permissions..."
         sudo chown -R $HOST_UID:$HOST_GID frontend/node_modules/
         find frontend/node_modules/ -type d -exec chmod 755 {} \;
-        find frontend/node_modules/ -type f -exec chmod 644 {} \;
-        # Binários do node_modules precisam de permissão de execução
-        if [ -d "frontend/node_modules/.bin" ]; then
-            find frontend/node_modules/.bin -type f -exec chmod 755 {} \;
-        fi
+        # PRIMEIRO: dar permissão de execução aos binários
+        find frontend/node_modules/ -type f -path "*/bin/*" -exec chmod 755 {} \;
+        find frontend/node_modules/ -type f -path "*/.bin/*" -exec chmod 755 {} \;
+        # DEPOIS: aplicar chmod 644 apenas em arquivos que NÃO são binários
+        find frontend/node_modules/ -type f ! -path "*/.bin/*" ! -path "*/bin/*" -exec chmod 644 {} \;
     fi
 fi
 
