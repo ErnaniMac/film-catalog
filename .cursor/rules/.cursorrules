@@ -464,7 +464,7 @@ Antes de executar `git commit`, verifique o tamanho da mensagem. Se ultrapassar 
 **Usuário**: "Corrija o bug no componente X"
 **Agente**: Faz as correções, mas **NÃO** faz commit
 
-**Usuário**: "<commit now>"
+**Usuário**: make commit
 **Agente**: Executa `git add -A && git commit -m "fix: corrige bug no componente X"`
 
 ---
