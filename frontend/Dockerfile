@@ -99,9 +99,25 @@ fi
 if [ "$(id -u)" = "0" ]; then
     # Ensure appuser exists with correct UID/GID
     if ! id -u appuser >/dev/null 2>&1; then
-        adduser -u ${HOST_UID} -G appuser -D -s /bin/sh appuser 2>/dev/null || true
+        # Try to get group name for GID
+        GROUP_NAME=$(getent group ${HOST_GID} | cut -d: -f1 || echo "appuser")
+        if [ -z "$GROUP_NAME" ] || [ "$GROUP_NAME" = "" ]; then
+            GROUP_NAME="appuser"
+        fi
+        # Create group if it doesn't exist
+        if ! getent group ${GROUP_NAME} >/dev/null 2>&1; then
+            addgroup -g ${HOST_GID} ${GROUP_NAME} 2>/dev/null || true
+        fi
+        # Create user
+        adduser -u ${HOST_UID} -G ${GROUP_NAME} -D -s /bin/sh appuser 2>/dev/null || true
     fi
-    exec su-exec appuser "$@"
+    # Verify appuser was created
+    if id -u appuser >/dev/null 2>&1; then
+        exec su-exec appuser "$@"
+    else
+        # Fallback: use numeric ID directly
+        exec su-exec ${HOST_UID}:${HOST_GID} "$@"
+    fi
 else
     exec "$@"
 fi
