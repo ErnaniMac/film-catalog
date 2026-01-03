@@ -272,10 +272,12 @@ Use **Conventional Commits**:
 
 ### Regras de Mensagens de Commit
 
-- **Máximo de 120 caracteres** na linha principal (subject)
+- **OBRIGATÓRIO: Máximo de 120 caracteres** na linha principal (subject)
+- **SEMPRE verifique o tamanho antes de fazer commit**
 - Use o modo imperativo ("adiciona" não "adicionando" ou "adicionado")
 - Primeira linha deve ser clara e descritiva
 - Se necessário, adicione corpo do commit após linha em branco para detalhes
+- **NUNCA ultrapasse 120 caracteres na primeira linha do commit**
 
 Exemplos:
 ```
