@@ -48,8 +48,15 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Administrador',
                 'password' => Hash::make('password'),
+                'email_verified_at' => now(),
             ]
         );
+
+        // Update email_verified_at if user already exists
+        if ($admin->email_verified_at === null) {
+            $admin->email_verified_at = now();
+            $admin->save();
+        }
 
         if (!$admin->hasRole('admin')) {
             $admin->assignRole('admin');
@@ -61,8 +68,15 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Usuário Teste',
                 'password' => Hash::make('password'),
+                'email_verified_at' => now(),
             ]
         );
+
+        // Update email_verified_at if user already exists
+        if ($user->email_verified_at === null) {
+            $user->email_verified_at = now();
+            $user->save();
+        }
 
         if (!$user->hasRole('user')) {
             $user->assignRole('user');
