@@ -97,26 +97,48 @@ fi
 # Switch to appuser and execute command
 # Use numeric IDs to ensure correct user
 if [ "$(id -u)" = "0" ]; then
-    # Ensure appuser exists with correct UID/GID
-    if ! id -u appuser >/dev/null 2>&1; then
-        # Try to get group name for GID
-        GROUP_NAME=$(getent group ${HOST_GID} | cut -d: -f1 || echo "appuser")
-        if [ -z "$GROUP_NAME" ] || [ "$GROUP_NAME" = "" ]; then
+    # Get or create group with correct GID
+    GROUP_NAME=$(getent group ${HOST_GID} | cut -d: -f1 || echo "")
+    if [ -z "$GROUP_NAME" ]; then
+        # Try to use existing appuser group or create new one
+        if getent group appuser >/dev/null 2>&1; then
+            GROUP_NAME="appuser"
+            # Update GID if different
+            CURRENT_GID=$(getent group appuser | cut -d: -f3)
+            if [ "$CURRENT_GID" != "${HOST_GID}" ]; then
+                delgroup appuser 2>/dev/null || true
+                addgroup -g ${HOST_GID} appuser 2>/dev/null || true
+            fi
+        else
+            addgroup -g ${HOST_GID} appuser 2>/dev/null || true
             GROUP_NAME="appuser"
         fi
-        # Create group if it doesn't exist
-        if ! getent group ${GROUP_NAME} >/dev/null 2>&1; then
-            addgroup -g ${HOST_GID} ${GROUP_NAME} 2>/dev/null || true
-        fi
-        # Create user
-        adduser -u ${HOST_UID} -G ${GROUP_NAME} -D -s /bin/sh appuser 2>/dev/null || true
     fi
-    # Verify appuser was created
-    if id -u appuser >/dev/null 2>&1; then
-        exec su-exec appuser "$@"
+    
+    # Get or create user with correct UID
+    EXISTING_USER=$(getent passwd ${HOST_UID} | cut -d: -f1 || echo "")
+    if [ -n "$EXISTING_USER" ] && [ "$EXISTING_USER" != "appuser" ]; then
+        # UID already in use by different user, use that user
+        exec su-exec ${EXISTING_USER} "$@"
     else
-        # Fallback: use numeric ID directly
-        exec su-exec ${HOST_UID}:${HOST_GID} "$@"
+        # Check if appuser exists and has correct UID
+        if id -u appuser >/dev/null 2>&1; then
+            CURRENT_UID=$(id -u appuser)
+            if [ "$CURRENT_UID" != "${HOST_UID}" ]; then
+                # Delete and recreate with correct UID
+                deluser appuser 2>/dev/null || true
+                adduser -u ${HOST_UID} -G ${GROUP_NAME} -D -s /bin/sh appuser 2>/dev/null || true
+            fi
+        else
+            # Create appuser with correct UID/GID
+            adduser -u ${HOST_UID} -G ${GROUP_NAME} -D -s /bin/sh appuser 2>/dev/null || true
+        fi
+        # Use appuser or fallback to numeric ID
+        if id -u appuser >/dev/null 2>&1; then
+            exec su-exec appuser "$@"
+        else
+            exec su-exec ${HOST_UID}:${HOST_GID} "$@"
+        fi
     fi
 else
     exec "$@"
