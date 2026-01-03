@@ -67,7 +67,7 @@ O projeto está completamente configurado para rodar com Docker Compose. Todos o
 
 **Comando rápido para iniciar:**
 ```bash
-source .env.docker && docker-compose up -d
+docker-compose up -d
 ```
 
 Após alguns segundos, a aplicação estará disponível em:
@@ -143,10 +143,10 @@ VITE_API_URL=http://localhost:8000/api
 
 ### Passo 3: Configure UID/GID para Docker (Recomendado)
 
-O arquivo `.env.docker` já foi criado automaticamente com seus valores de UID/GID. Verifique se está correto:
+O arquivo `.env` já foi criado automaticamente com seus valores de UID/GID. Verifique se está correto:
 
 ```bash
-cat .env.docker
+cat .env
 # Deve mostrar algo como:
 # HOST_UID=1000
 # HOST_GID=1000
@@ -155,17 +155,17 @@ cat .env.docker
 Se precisar atualizar:
 
 ```bash
-echo "HOST_UID=$(id -u)" > .env.docker
-echo "HOST_GID=$(id -g)" >> .env.docker
+echo "HOST_UID=$(id -u)" > .env
+echo "HOST_GID=$(id -g)" >> .env
 ```
 
 ### Passo 4: Inicie os Containers Docker
 
-**IMPORTANTE**: Sempre carregue o `.env.docker` antes de executar comandos do docker-compose:
+**IMPORTANTE**: Sempre carregue o `.env` antes de executar comandos do docker-compose:
 
 ```bash
 # Carregue as variáveis de ambiente
-source .env.docker
+O Docker Compose lê automaticamente o .env
 
 # Inicie os containers
 docker-compose up -d --build
@@ -705,18 +705,18 @@ Este script corrige automaticamente:
 
 #### Verificação
 
-1. **Verifique o `.env.docker`:**
+1. **Verifique o `.env`:**
    ```bash
-   cat .env.docker
+   cat .env
    id
    ```
    
    Os valores devem corresponder ao seu usuário.
 
-2. **Se necessário, atualize o `.env.docker`:**
+2. **Se necessário, atualize o `.env`:**
    ```bash
-   echo "HOST_UID=$(id -u)" > .env.docker
-   echo "HOST_GID=$(id -g)" >> .env.docker
+   echo "HOST_UID=$(id -u)" > .env
+   echo "HOST_GID=$(id -g)" >> .env
    ```
 
 #### Após Corrigir Permissões
@@ -731,9 +731,9 @@ docker-compose restart
 
 Para evitar o problema no futuro:
 
-1. Sempre use `source .env.docker` antes de comandos `docker-compose`:
+1. Sempre use `source .env` antes de comandos `docker-compose`:
    ```bash
-   source .env.docker && docker-compose up -d
+   docker-compose up -d
    ```
 
 2. O entrypoint dos containers corrige automaticamente as permissões ao iniciar, mas arquivos existentes podem precisar de correção manual uma vez.
