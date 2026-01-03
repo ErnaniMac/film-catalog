@@ -18,7 +18,13 @@ const route = useRoute()
 const authStore = useAuthStore()
 
 const showNavbar = computed(() => {
-  return route.name !== 'login'
+  // Não mostrar navbar em rotas de guest (login, register, etc)
+  const guestRoutes = ['login', 'register', 'forgot-password', 'reset-password', 'verify-email']
+  if (guestRoutes.includes(route.name)) {
+    return false
+  }
+  // Mostrar navbar apenas se usuário estiver autenticado
+  return authStore.isAuthenticated && !!authStore.user
 })
 </script>
 

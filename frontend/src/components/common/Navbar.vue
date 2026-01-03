@@ -18,6 +18,7 @@
           {{ authStore.user.name }}
         </span>
         <Button
+          v-if="authStore.isAuthenticated && authStore.user"
           label="Sair"
           icon="pi pi-sign-out"
           severity="danger"
