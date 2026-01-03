@@ -44,7 +44,22 @@ class PasswordResetController extends Controller
             ]);
 
             // Enviar e-mail de redefinição
-            Mail::to($user->email)->send(new ResetPasswordEmail($user, $resetUrl));
+            try {
+                Mail::to($user->email)->send(new ResetPasswordEmail($user, $resetUrl));
+            } catch (\Exception $mailException) {
+                // Log do erro de email mas não falha a requisição
+                \Log::error('Erro ao enviar email de reset de senha: ' . $mailException->getMessage());
+                
+                // Em desenvolvimento, retornar a URL diretamente
+                if (config('app.env') === 'local') {
+                    return response()->json([
+                        'message' => 'Link de redefinição gerado (email não enviado em desenvolvimento)',
+                        'reset_url' => $resetUrl
+                    ], 200);
+                }
+                
+                throw $mailException;
+            }
 
             return response()->json([
                 'message' => 'Link de redefinição de senha enviado para seu e-mail'
