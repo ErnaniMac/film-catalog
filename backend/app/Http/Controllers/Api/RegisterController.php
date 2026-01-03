@@ -171,7 +171,21 @@ class RegisterController extends Controller
             'signature' => $signature
         ]);
 
-        Mail::to($user->email)->send(new WelcomeEmail($user, $verificationUrl));
+        try {
+            Mail::to($user->email)->send(new WelcomeEmail($user, $verificationUrl));
+        } catch (\Exception $mailException) {
+            \Log::error('Erro ao reenviar email de verificação: ' . $mailException->getMessage());
+            
+            // Em desenvolvimento, retornar a URL diretamente
+            if (config('app.env') === 'local') {
+                return response()->json([
+                    'message' => 'Link de verificação gerado (email não enviado em desenvolvimento)',
+                    'verification_url' => $verificationUrl
+                ], 200);
+            }
+            
+            throw $mailException;
+        }
 
         return response()->json([
             'message' => 'E-mail de verificação reenviado com sucesso'
