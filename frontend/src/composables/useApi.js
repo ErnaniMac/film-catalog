@@ -1,45 +1,74 @@
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
 
-// Interceptar XMLHttpRequest antes do axios para suprimir logs 422
-if (typeof window !== 'undefined' && window.XMLHttpRequest) {
-  const OriginalXHR = window.XMLHttpRequest
-  window.XMLHttpRequest = function() {
-    const xhr = new OriginalXHR()
-    const originalOpen = xhr.open
-    const originalSend = xhr.send
-    let requestUrl = ''
-    let requestMethod = ''
-    
-    xhr.open = function(method, url, ...args) {
-      requestMethod = method
-      requestUrl = url
-      return originalOpen.apply(this, [method, url, ...args])
-    }
-    
-    xhr.send = function(...args) {
-      const originalOnReadyStateChange = xhr.onreadystatechange
+// Interceptar XMLHttpRequest e fetch antes do axios para suprimir logs 422
+if (typeof window !== 'undefined') {
+  // Interceptar XMLHttpRequest
+  if (window.XMLHttpRequest) {
+    const OriginalXHR = window.XMLHttpRequest
+    window.XMLHttpRequest = function() {
+      const xhr = new OriginalXHR()
+      const originalOpen = xhr.open
+      const originalSend = xhr.send
       
-      xhr.onreadystatechange = function() {
-        // Suprimir logs para status 422
-        if (xhr.readyState === 4 && xhr.status === 422) {
-          // Não fazer nada - silenciar completamente
-          // Mas ainda permitir que o axios receba a resposta
+      xhr.open = function(method, url, ...args) {
+        return originalOpen.apply(this, [method, url, ...args])
+      }
+      
+      xhr.send = function(...args) {
+        const originalOnReadyStateChange = xhr.onreadystatechange
+        
+        xhr.onreadystatechange = function() {
+          // Suprimir logs para status 422
+          if (xhr.readyState === 4 && xhr.status === 422) {
+            // Silenciar completamente mas permitir que o axios receba a resposta
+            if (originalOnReadyStateChange) {
+              originalOnReadyStateChange.apply(this, arguments)
+            }
+            return
+          }
+          
           if (originalOnReadyStateChange) {
             originalOnReadyStateChange.apply(this, arguments)
           }
-          return
         }
         
-        if (originalOnReadyStateChange) {
-          originalOnReadyStateChange.apply(this, arguments)
-        }
+        return originalSend.apply(this, args)
       }
       
-      return originalSend.apply(this, args)
+      return xhr
     }
-    
-    return xhr
+  }
+  
+  // Interceptar fetch também (axios pode usar fetch em alguns casos)
+  if (window.fetch) {
+    const originalFetch = window.fetch
+    window.fetch = function(...args) {
+      return originalFetch.apply(this, args).then(response => {
+        // Se for 422, não logar mas retornar a resposta normalmente
+        if (response.status === 422) {
+          // Marcar para não ser logado
+          response._isValidationError = true
+        }
+        return response
+      }).catch(error => {
+        // Suprimir logs de erro 422
+        if (error?.response?.status === 422 || error?.status === 422) {
+          error._isValidationError = true
+        }
+        throw error
+      })
+    }
+  }
+  
+  // Interceptar console.info também (alguns navegadores usam isso)
+  const originalConsoleInfo = console.info
+  console.info = function(...args) {
+    const firstArg = args[0]
+    if (typeof firstArg === 'string' && /422|Unprocessable/i.test(firstArg)) {
+      return // Silenciar
+    }
+    originalConsoleInfo.apply(console, args)
   }
 }
 
