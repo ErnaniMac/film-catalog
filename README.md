@@ -313,12 +313,35 @@ Se você encontrar erros como "Failed to save ... insufficient permissions" ou p
    sudo chown -R $(id -u):$(id -g) backend/ frontend/
    ```
 
-### Arquivos criados como root
+### Arquivos criados como root ou com proprietário incorreto
 
-Se arquivos forem criados como `root:root`, isso significa que os containers não estão usando o UID/GID correto. Certifique-se de:
-- Ter as variáveis `HOST_UID` e `HOST_GID` exportadas antes de executar `docker-compose`
-- Ter reconstruído os containers após configurar as variáveis
-- Verificar que o `docker-compose.yml` está usando `${HOST_UID:-1000}` e `${HOST_GID:-1000}`
+Se arquivos forem criados como `root:root` ou com outro proprietário (ex: `1001:docker`), isso significa que os containers não estão usando o UID/GID correto. 
+
+**Solução rápida:**
+```bash
+# Para frontend
+./fix-frontend-permissions.sh
+
+# Para backend
+./fix-permissions.sh
+```
+
+**Solução permanente:**
+1. Certifique-se de ter as variáveis `HOST_UID` e `HOST_GID` exportadas antes de executar `docker-compose`:
+   ```bash
+   export HOST_UID=$(id -u)
+   export HOST_GID=$(id -g)
+   docker-compose up -d --build
+   ```
+
+2. Reconstrua os containers após configurar as variáveis:
+   ```bash
+   docker-compose down
+   docker-compose build --no-cache
+   docker-compose up -d
+   ```
+
+3. Verifique que o `docker-compose.yml` está usando `${HOST_UID:-1000}` e `${HOST_GID:-1000}`
 
 ## 🧪 Testes
 
