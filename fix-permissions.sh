@@ -29,9 +29,16 @@ if [ -d "frontend" ]; then
     find frontend/ -type d -exec chmod 755 {} \;
     find frontend/ -type f -exec chmod 644 {} \;
     
-    # Garantir que node_modules seja excluído do chown (é volume do Docker)
+    # node_modules precisa de permissões especiais
     if [ -d "frontend/node_modules" ]; then
-        echo "Note: node_modules será gerenciado pelo container"
+        echo "Fixing node_modules permissions..."
+        sudo chown -R $HOST_UID:$HOST_GID frontend/node_modules/
+        find frontend/node_modules/ -type d -exec chmod 755 {} \;
+        find frontend/node_modules/ -type f -exec chmod 644 {} \;
+        # Binários do node_modules precisam de permissão de execução
+        if [ -d "frontend/node_modules/.bin" ]; then
+            find frontend/node_modules/.bin -type f -exec chmod 755 {} \;
+        fi
     fi
 fi
 

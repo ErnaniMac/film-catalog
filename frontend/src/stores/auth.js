@@ -6,7 +6,8 @@ export const useAuthStore = defineStore('auth', () => {
   const user = ref(null)
   const token = ref(localStorage.getItem('token') || null)
 
-  const isAuthenticated = computed(() => !!token.value)
+  // Usuário só está autenticado se tiver token E usuário carregado
+  const isAuthenticated = computed(() => !!token.value && !!user.value)
   const isAdmin = computed(() => user.value?.roles?.some(role => role.name === 'admin') || false)
 
   async function login(email, password) {

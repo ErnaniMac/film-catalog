@@ -31,26 +31,43 @@ RUN EXISTING_GROUP=$(getent group ${GROUP_ID} 2>/dev/null | cut -d: -f1 || echo 
 RUN apk add --no-cache su-exec
 
 # Create entrypoint script to fix permissions
-RUN echo '#!/bin/sh' > /usr/local/bin/docker-entrypoint.sh && \
-    echo 'set -e' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '# Fix ownership of app directory if running as root' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo 'if [ "$(id -u)" = "0" ] && [ -d "/app" ]; then' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '    chown -R appuser:appuser /app 2>/dev/null || true' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '    find /app -type d -exec chmod 755 {} \; 2>/dev/null || true' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '    find /app -type f -exec chmod 644 {} \; 2>/dev/null || true' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '    mkdir -p /app/node_modules 2>/dev/null || true' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '    chown -R appuser:appuser /app/node_modules 2>/dev/null || true' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '    chmod -R 755 /app/node_modules 2>/dev/null || true' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo 'fi' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '# Switch to appuser and execute command' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo 'if [ "$(id -u)" = "0" ]; then' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '    exec su-exec appuser "$@"' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo 'else' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '    exec "$@"' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo 'fi' >> /usr/local/bin/docker-entrypoint.sh && \
-    chmod +x /usr/local/bin/docker-entrypoint.sh
+# This script runs as root and fixes permissions before switching to appuser
+RUN cat > /usr/local/bin/docker-entrypoint.sh << 'EOFSCRIPT'
+#!/bin/sh
+set -e
+
+# Fix ownership of app directory if running as root
+if [ "$(id -u)" = "0" ] && [ -d "/app" ]; then
+    # Change ownership of all files to appuser (which has same UID/GID as host)
+    chown -R appuser:appuser /app 2>/dev/null || true
+    
+    # Set proper permissions - directories need execute bit
+    find /app -type d -exec chmod 755 {} \; 2>/dev/null || true
+    find /app -type f -exec chmod 644 {} \; 2>/dev/null || true
+    
+    # Ensure node_modules directory exists and is writable
+    mkdir -p /app/node_modules 2>/dev/null || true
+    chown -R appuser:appuser /app/node_modules 2>/dev/null || true
+    find /app/node_modules -type d -exec chmod 755 {} \; 2>/dev/null || true
+    find /app/node_modules -type f -exec chmod 644 {} \; 2>/dev/null || true
+    
+    # Make sure package files are writable
+    [ -f "/app/package.json" ] && chown appuser:appuser /app/package.json && chmod 644 /app/package.json 2>/dev/null || true
+    [ -f "/app/package-lock.json" ] && chown appuser:appuser /app/package-lock.json && chmod 644 /app/package-lock.json 2>/dev/null || true
+    [ -f "/app/vite.config.js" ] && chown appuser:appuser /app/vite.config.js && chmod 644 /app/vite.config.js 2>/dev/null || true
+    
+    # Fix src directory permissions
+    [ -d "/app/src" ] && chown -R appuser:appuser /app/src && find /app/src -type d -exec chmod 755 {} \; && find /app/src -type f -exec chmod 644 {} \; 2>/dev/null || true
+fi
+
+# Switch to appuser and execute command
+if [ "$(id -u)" = "0" ]; then
+    exec su-exec appuser "$@"
+else
+    exec "$@"
+fi
+EOFSCRIPT
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 WORKDIR /app
 

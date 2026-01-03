@@ -63,25 +63,55 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
   
-  // Se tem token mas não tem usuário, buscar usuário
+  // Se tem token mas não tem usuário, validar token buscando usuário
   if (authStore.token && !authStore.user) {
     try {
-      await authStore.fetchUser()
+      const result = await authStore.fetchUser()
+      // Se falhar ao buscar usuário, token é inválido
+      if (!result.success) {
+        authStore.logout()
+      }
     } catch (error) {
       // Se falhar, limpar token
       authStore.logout()
     }
   }
   
-  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    next({ name: 'login' })
-  } else if (to.meta.requiresGuest && authStore.isAuthenticated) {
-    next({ name: 'home' })
-  } else if (to.meta.requiresAdmin && !authStore.isAdmin) {
-    next({ name: 'home' })
-  } else {
-    next()
+  // Rota home: redireciona baseado no estado de autenticação
+  if (to.name === 'home') {
+    if (authStore.isAuthenticated && authStore.user) {
+      next({ name: 'films' })
+    } else {
+      next({ name: 'login' })
+    }
+    return
   }
+  
+  // Rotas que requerem autenticação
+  if (to.meta.requiresAuth) {
+    if (!authStore.isAuthenticated || !authStore.user) {
+      next({ name: 'login' })
+      return
+    }
+  }
+  
+  // Rotas que requerem ser guest (não autenticado)
+  if (to.meta.requiresGuest) {
+    if (authStore.isAuthenticated && authStore.user) {
+      next({ name: 'films' })
+      return
+    }
+  }
+  
+  // Rotas que requerem admin
+  if (to.meta.requiresAdmin) {
+    if (!authStore.isAuthenticated || !authStore.user || !authStore.isAdmin) {
+      next({ name: 'films' })
+      return
+    }
+  }
+  
+  next()
 })
 
 export default router
