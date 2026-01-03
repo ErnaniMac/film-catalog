@@ -731,7 +731,7 @@ docker-compose restart
 
 Para evitar o problema no futuro:
 
-1. Sempre use `source .env` antes de comandos `docker-compose`:
+1. O Docker Compose lê automaticamente o arquivo `.env` na raiz:
    ```bash
    docker-compose up -d
    ```
