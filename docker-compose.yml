@@ -5,12 +5,12 @@ services:
     container_name: film-catalog-mysql
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: film_catalog
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_PASSWORD: password
-      MYSQL_USER: film_user
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-film_catalog}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-password}
+      MYSQL_USER: ${MYSQL_USER:-film_user}
     ports:
-      - "3307:3306"
+      - "${MYSQL_PORT:-3307}:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
@@ -22,7 +22,7 @@ services:
     container_name: film-catalog-redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
     networks:
       - film-network
 
@@ -44,14 +44,14 @@ services:
       - mysql
       - redis
     environment:
-      DB_CONNECTION: mysql
-      DB_HOST: mysql
-      DB_PORT: 3306
-      DB_DATABASE: film_catalog
-      DB_USERNAME: film_user
-      DB_PASSWORD: password
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
+      DB_CONNECTION: ${DB_CONNECTION:-mysql}
+      DB_HOST: ${DB_HOST:-mysql}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_DATABASE: ${DB_DATABASE:-film_catalog}
+      DB_USERNAME: ${DB_USERNAME:-film_user}
+      DB_PASSWORD: ${DB_PASSWORD:-password}
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
       UID: ${HOST_UID:-1000}
       GID: ${HOST_GID:-1000}
     networks:
@@ -65,7 +65,7 @@ services:
     container_name: film-catalog-nginx
     restart: unless-stopped
     ports:
-      - "8000:80"
+      - "${NGINX_PORT:-8000}:80"
     volumes:
       - ./backend:/var/www/html
     depends_on:
@@ -89,7 +89,7 @@ services:
       - ./frontend:/app
       - /app/node_modules
     ports:
-      - "5173:5173"
+      - "${NODE_PORT:-5173}:5173"
     depends_on:
       - laravel
     environment:
