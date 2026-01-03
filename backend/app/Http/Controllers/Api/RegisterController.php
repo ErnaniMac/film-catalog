@@ -46,7 +46,27 @@ class RegisterController extends Controller
             ]);
 
             // Enviar e-mail de boas-vindas com link de verificação
-            Mail::to($user->email)->send(new WelcomeEmail($user, $verificationUrl));
+            try {
+                Mail::to($user->email)->send(new WelcomeEmail($user, $verificationUrl));
+            } catch (\Exception $mailException) {
+                // Log do erro de email mas não falha a requisição
+                \Log::error('Erro ao enviar email de boas-vindas: ' . $mailException->getMessage());
+                
+                // Em desenvolvimento, retornar a URL diretamente
+                if (config('app.env') === 'local') {
+                    return response()->json([
+                        'message' => 'Usuário criado com sucesso. Link de verificação gerado (email não enviado em desenvolvimento).',
+                        'verification_url' => $verificationUrl,
+                        'user' => [
+                            'id' => $user->id,
+                            'name' => $user->name,
+                            'email' => $user->email,
+                        ]
+                    ], 201);
+                }
+                
+                throw $mailException;
+            }
 
             return response()->json([
                 'message' => 'Usuário criado com sucesso. Verifique seu e-mail para ativar sua conta.',

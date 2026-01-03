@@ -97,6 +97,22 @@ const error = ref('')
 const success = ref('')
 
 async function handleRegister() {
+  // Validar campos antes de enviar
+  if (!form.value.name || !form.value.email || !form.value.password) {
+    error.value = 'Por favor, preencha todos os campos obrigatórios.'
+    return
+  }
+
+  if (form.value.password !== form.value.password_confirmation) {
+    error.value = 'As senhas não coincidem.'
+    return
+  }
+
+  if (form.value.password.length < 8) {
+    error.value = 'A senha deve ter no mínimo 8 caracteres.'
+    return
+  }
+
   loading.value = true
   error.value = ''
   success.value = ''
@@ -107,13 +123,22 @@ async function handleRegister() {
     if (response.data) {
       success.value = response.data.message || 'Conta criada com sucesso!'
       
+      // Se tiver URL de verificação (desenvolvimento), mostrar
+      if (response.data.verification_url) {
+        success.value += ` Link: ${response.data.verification_url}`
+      }
+      
       // Redirecionar para login após 3 segundos
       setTimeout(() => {
         router.push('/login')
       }, 3000)
     }
   } catch (err) {
-    if (err.response?.data?.errors) {
+    console.error('Erro ao registrar:', err)
+    
+    if (err.response?.status === 500) {
+      error.value = 'Erro interno do servidor. Verifique os logs ou tente novamente.'
+    } else if (err.response?.data?.errors) {
       const errors = err.response.data.errors
       error.value = Object.values(errors).flat().join(', ')
     } else {
