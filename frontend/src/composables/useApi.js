@@ -6,6 +6,12 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
+  },
+  // Suprimir logs automáticos do axios para erros 422
+  validateStatus: function (status) {
+    // Retornar true para 422 para que não seja tratado como erro pelo axios
+    // Mas ainda vamos rejeitar manualmente no interceptor para manter o comportamento
+    return status >= 200 && status < 500
   }
 })
 
@@ -25,7 +31,16 @@ api.interceptors.request.use(
 
 // Response interceptor
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Se for 422, tratar como erro mas sem logar
+    if (response.status === 422) {
+      const error = new Error('Validation Error')
+      error.response = response
+      error._isValidationError = true
+      return Promise.reject(error)
+    }
+    return response
+  },
   (error) => {
     if (error.response?.status === 401) {
       const authStore = useAuthStore()
