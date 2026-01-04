@@ -593,8 +593,8 @@ async function executeDelete() {
 .role-badge,
 .permission-badge {
   display: inline-block;
-  background: #e3f2fd;
-  color: #1976d2;
+  background: #eef2ff;
+  color: #6366f1;
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
   font-size: 0.85rem;

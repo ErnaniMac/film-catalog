@@ -46,10 +46,11 @@ async function handleLogout() {
 
 <style scoped>
 .navbar {
-  background: #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   padding: 1rem 0;
   margin-bottom: 2rem;
+  border-bottom: 1px solid #e9ecef;
 }
 
 .navbar-content {
@@ -68,7 +69,8 @@ async function handleLogout() {
 
 .navbar-brand h2 {
   margin: 0;
-  color: #1976d2;
+  color: #6366f1;
+  font-weight: 600;
 }
 
 .navbar-menu {
@@ -86,12 +88,13 @@ async function handleLogout() {
 }
 
 .nav-link:hover {
-  background: #f5f5f5;
+  background: #f1f5f9;
+  color: #6366f1;
 }
 
 .nav-link.router-link-active {
-  color: #1976d2;
-  background: #e3f2fd;
+  color: #6366f1;
+  background: #eef2ff;
 }
 
 .navbar-actions {

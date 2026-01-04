@@ -37,6 +37,13 @@ const showNavbar = computed(() => {
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background: #f8f9fa;
+  color: #333;
+}
+
+#app {
+  min-height: 100vh;
+  background: #f8f9fa;
 }
 </style>
 

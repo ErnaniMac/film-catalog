@@ -15,7 +15,11 @@ app.use(pinia)
 app.use(router)
 app.use(PrimeVue, {
   theme: {
-    preset: Aura
+    preset: Aura,
+    options: {
+      darkModeSelector: false,
+      cssLayer: false
+    }
   }
 })
 app.use(ToastService)

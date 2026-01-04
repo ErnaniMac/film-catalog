@@ -166,7 +166,7 @@ async function handleSendResetLink() {
 }
 
 .login-link a {
-  color: #1976d2;
+  color: #6366f1;
   text-decoration: none;
   font-weight: 500;
 }

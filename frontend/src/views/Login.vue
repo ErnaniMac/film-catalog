@@ -87,7 +87,7 @@ async function handleLogin() {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%);
 }
 
 .login-card {
@@ -148,7 +148,7 @@ async function handleLogin() {
 }
 
 .links a {
-  color: #1976d2;
+  color: #6366f1;
   text-decoration: none;
   font-weight: 500;
 }
