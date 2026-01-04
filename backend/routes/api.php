@@ -13,6 +13,9 @@ use App\Http\Controllers\Api\PasswordResetController;
 // Public routes
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/tmdb/search', [TmdbController::class, 'search']);
+Route::get('/tmdb/details', [TmdbController::class, 'details']);
+Route::get('/tmdb/discover', [TmdbController::class, 'discover']);
+Route::get('/tmdb/genres', [TmdbController::class, 'genres']);
 
 // Registration and email verification
 Route::post('/register', [RegisterController::class, 'register']);
