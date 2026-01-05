@@ -11,9 +11,7 @@ export const useFilmStore = defineStore('film', () => {
   const genres = ref([])
   const filters = ref({
     genre: null,
-    year: null,
-    rating: null,
-    certification: null
+    year: null
   })
 
   async function searchMovies(query, page = 1) {
@@ -60,13 +58,14 @@ export const useFilmStore = defineStore('film', () => {
     }
   }
 
-  async function discoverMovies(filters, page = 1) {
+  async function discoverMovies(filters, page = 1, sortBy = 'popularity.desc') {
     loading.value = true
 
     try {
       const params = {
         page,
-        language: 'pt-BR'
+        language: 'pt-BR',
+        sort_by: sortBy
       }
 
       if (filters.genre) {
@@ -81,16 +80,27 @@ export const useFilmStore = defineStore('film', () => {
         }
       }
 
-      if (filters.rating !== null && filters.rating !== undefined && filters.rating !== '') {
-        params['vote_average.gte'] = parseFloat(filters.rating)
-      }
+      console.log('📤 Parâmetros enviados para API:', params)
 
-      if (filters.certification) {
-        params.certification_country = 'BR'
-        params.certification = filters.certification
-      }
+      // Construir query string manualmente para garantir que parâmetros com ponto sejam enviados corretamente
+      // O Axios pode converter vote_average.gte em vote_average[gte] se não configurado corretamente
+      const queryString = new URLSearchParams()
+      Object.keys(params).forEach(key => {
+        if (params[key] !== null && params[key] !== undefined && params[key] !== '') {
+          queryString.append(key, params[key])
+        }
+      })
+      
+      console.log('🔗 Query string construída:', queryString.toString())
 
-      const response = await api.get('/tmdb/discover', { params })
+      // Usar a query string construída manualmente
+      const response = await api.get(`/tmdb/discover?${queryString.toString()}`)
+      
+      console.log('📥 Resposta da API:', {
+        totalResults: response.data.total_results,
+        resultsCount: response.data.results?.length,
+        page: response.data.page
+      })
 
       movies.value = response.data.results || []
       currentPage.value = response.data.page || 1
