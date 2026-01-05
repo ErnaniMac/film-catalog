@@ -3,7 +3,7 @@
     <div class="navbar-content">
       <div class="navbar-brand">
         <router-link to="/films" class="brand-link">
-          <h2>Catálogo de Filmes</h2>
+          <h2>Cine Catálogo</h2>
         </router-link>
       </div>
 
