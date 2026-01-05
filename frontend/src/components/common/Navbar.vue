@@ -3,6 +3,7 @@
     <div class="navbar-content">
       <div class="navbar-brand">
         <router-link to="/" class="brand-link">
+          <img src="/favicon.svg" alt="Cine Catálogo" class="brand-logo" />
           <h2>Cine Catálogo</h2>
         </router-link>
       </div>
@@ -15,9 +16,11 @@
 
       <div class="navbar-actions">
         <template v-if="authStore.isAuthenticated && authStore.user">
-          <span class="user-info">
-            {{ authStore.user.name }}
-          </span>
+          <router-link to="/settings" class="user-info-link">
+            <span class="user-info">
+              {{ authStore.user.name }}
+            </span>
+          </router-link>
           <Button
             label="Sair"
             icon="pi pi-sign-out"
@@ -80,6 +83,15 @@ async function handleLogout() {
 .navbar-brand .brand-link {
   text-decoration: none;
   color: inherit;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.brand-logo {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
 }
 
 .navbar-brand h2 {
@@ -116,6 +128,17 @@ async function handleLogout() {
   display: flex;
   align-items: center;
   gap: 1rem;
+}
+
+.user-info-link {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.user-info-link:hover {
+  opacity: 0.7;
 }
 
 .user-info {
