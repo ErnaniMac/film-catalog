@@ -919,6 +919,19 @@ function formatVoteCount(count) {
   color: #666;
 }
 
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.page-info {
+  font-weight: 500;
+  color: #475569;
+}
+
 /* Scrollbar personalizada para overlay */
 .overlay-content::-webkit-scrollbar {
   width: 6px;
