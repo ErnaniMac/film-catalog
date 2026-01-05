@@ -196,9 +196,7 @@ class TmdbController extends Controller
             'page' => 'nullable|integer|min:1|max:1000',
             'with_genres' => 'nullable|string',
             'primary_release_year' => 'nullable|string',
-            'vote_average.gte' => 'nullable|numeric|min:0|max:10|gte:0|lte:10',
-            'certification_country' => 'nullable|string|size:2',
-            'certification' => 'nullable|string',
+            'sort_by' => 'nullable|string',
         ]);
 
         $page = $request->get('page', 1);
@@ -212,12 +210,33 @@ class TmdbController extends Controller
         }
 
         // Construir parâmetros de filtro
+        $sortBy = $request->get('sort_by', 'popularity.desc');
+        
+        // Validar valores de sort_by permitidos pela API do TMDB
+        $allowedSortBy = [
+            'popularity.asc', 'popularity.desc',
+            'release_date.asc', 'release_date.desc',
+            'vote_average.asc', 'vote_average.desc',
+            'vote_count.asc', 'vote_count.desc'
+        ];
+        
+        if (!in_array($sortBy, $allowedSortBy)) {
+            $sortBy = 'popularity.desc'; // Valor padrão se inválido
+        }
+        
         $params = [
             'page' => $page,
             'language' => 'pt-BR',
             'include_adult' => false,
-            'sort_by' => 'popularity.desc',
+            'sort_by' => $sortBy,
         ];
+        
+        // Log para debug
+        Log::info('TMDB Discover - Sort By', [
+            'request_sort_by' => $request->get('sort_by'),
+            'validated_sort_by' => $sortBy,
+            'params' => $params
+        ]);
 
         if ($request->has('with_genres') && $request->get('with_genres')) {
             $params['with_genres'] = $request->get('with_genres');
@@ -234,31 +253,9 @@ class TmdbController extends Controller
             }
         }
 
-        // Verificar vote_average.gte de diferentes formas (Laravel pode tratar o ponto de forma especial)
-        $ratingValue = $request->input('vote_average.gte') 
-                    ?? $request->query('vote_average.gte')
-                    ?? $request->get('vote_average.gte');
-        
-        // Aceitar qualquer valor numérico, incluindo 0
-        if ($ratingValue !== null && $ratingValue !== '') {
-            $rating = (float) $ratingValue;
-            // Garantir que o rating está entre 0 e 10
-            if ($rating >= 0 && $rating <= 10) {
-                $params['vote_average.gte'] = $rating;
-            }
-        }
-
-        if ($request->has('certification_country') && $request->get('certification_country')) {
-            $params['certification_country'] = $request->get('certification_country');
-        }
-
-        if ($request->has('certification') && $request->get('certification')) {
-            $params['certification'] = $request->get('certification');
-        }
-
         // Cache key baseado nos filtros
         $cacheKey = "tmdb_discover_" . md5(json_encode($params));
-
+        
         try {
             $data = Cache::remember($cacheKey, 3600, function () use ($apiUrl, $apiKey, $params) {
                 /** @var \Illuminate\Http\Client\Response $httpResponse */
