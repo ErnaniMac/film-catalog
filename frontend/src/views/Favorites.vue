@@ -439,6 +439,7 @@ function formatVoteCount(count) {
   margin-bottom: 2rem;
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 1rem;
 }
 
