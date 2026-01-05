@@ -42,8 +42,7 @@ const router = createRouter({
     {
       path: '/films',
       name: 'films',
-      component: () => import('@/views/Films.vue'),
-      meta: { requiresAuth: true }
+      component: () => import('@/views/Films.vue')
     },
     {
       path: '/favorites',
@@ -77,13 +76,9 @@ router.beforeEach(async (to, from, next) => {
     }
   }
   
-  // Rota home: redireciona baseado no estado de autenticação
+  // Rota home: sempre redireciona para /films
   if (to.name === 'home') {
-    if (authStore.isAuthenticated && authStore.user) {
-      next({ name: 'films' })
-    } else {
-      next({ name: 'login' })
-    }
+    next({ name: 'films' })
     return
   }
   
