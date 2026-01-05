@@ -3,6 +3,7 @@
     <Toast />
     <Navbar v-if="showNavbar" />
     <RouterView />
+    <Footer />
   </div>
 </template>
 
@@ -13,17 +14,13 @@ import { useAuthStore } from '@/stores/auth'
 import { RouterView } from 'vue-router'
 import Toast from 'primevue/toast'
 import Navbar from '@/components/common/Navbar.vue'
+import Footer from '@/components/common/Footer.vue'
 
 const route = useRoute()
 const authStore = useAuthStore()
 
 const showNavbar = computed(() => {
-  // Não mostrar navbar em rotas de guest (login, register, etc)
-  const guestRoutes = ['login', 'register', 'forgot-password', 'reset-password', 'verify-email']
-  if (guestRoutes.includes(route.name)) {
-    return false
-  }
-  // Mostrar navbar em todas as outras rotas (incluindo quando não autenticado)
+  // Mostrar navbar em todas as rotas
   return true
 })
 </script>
@@ -44,6 +41,8 @@ body {
 #app {
   min-height: 100vh;
   background: #f8f9fa;
+  display: flex;
+  flex-direction: column;
 }
 </style>
 
