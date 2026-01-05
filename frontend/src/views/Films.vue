@@ -1,42 +1,47 @@
 <template>
   <div class="films-container">
     <div class="header">
-      <h1>Buscar Filmes</h1>
-      <p>Encontre seus filmes favoritos usando a API do TMDB</p>
+      <h1>Encontre seus filmes favoritos</h1>
     </div>
 
     <div class="search-section">
-      <div class="search-box">
-        <InputText
-          v-model="searchInput"
-          placeholder="Digite o nome do filme..."
-          @keyup.enter="handleSearch"
-          class="search-input"
-        />
-        <Button
-          label="Buscar"
-          icon="pi pi-search"
-          @click="handleSearch"
-          :loading="filmStore.loading"
-        />
-        <Button
-          v-if="filmStore.searchQuery"
-          label="Limpar"
-          icon="pi pi-times"
-          severity="secondary"
-          @click="handleClear"
-        />
+      <div class="search-container">
+        <div class="search-box">
+          <InputText
+            v-model="searchInput"
+            placeholder="Digite o nome do filme..."
+            @keyup.enter="handleSearch"
+            class="search-input"
+          />
+          <Button
+            label="Buscar"
+            icon="pi pi-search"
+            @click="handleSearch"
+            :loading="filmStore.loading"
+          />
+          <Button
+            v-if="filmStore.searchQuery"
+            label="Limpar"
+            icon="pi pi-times"
+            severity="secondary"
+            @click="handleClear"
+          />
+        </div>
+        <div class="filters-button-section">
+          <Button
+            label="Filtros"
+            icon="pi pi-filter"
+            @click="filtersModalVisible = true"
+            severity="secondary"
+          />
+          <Button
+            label="Ordenação"
+            icon="pi pi-sort"
+            @click="sortModalVisible = true"
+            severity="secondary"
+          />
+        </div>
       </div>
-    </div>
-
-    <!-- Botão para abrir modal de filtros -->
-    <div class="filters-button-section">
-      <Button
-        label="Filtros"
-        icon="pi pi-filter"
-        @click="filtersModalVisible = true"
-        severity="secondary"
-      />
     </div>
 
     <!-- Modal de Filtros -->
@@ -47,6 +52,7 @@
       :style="{ width: '600px' }"
       :autoFocus="false"
       :closable="true"
+      :dismissableMask="true"
       class="filters-modal"
     >
       <div class="filters-section">
@@ -79,33 +85,6 @@
             />
           </div>
 
-          <div class="filter-item">
-            <label for="rating-filter">Avaliação Mínima</label>
-            <Dropdown
-              id="rating-filter"
-              v-model="selectedRating"
-              :options="ratingOptions"
-              optionLabel="label"
-              optionValue="value"
-              placeholder="Selecione"
-              class="filter-dropdown"
-              @change="handleFilterChange"
-            />
-          </div>
-
-          <div class="filter-item">
-            <label for="certification-filter">Classificação</label>
-            <Dropdown
-              id="certification-filter"
-              v-model="selectedCertification"
-              :options="certificationOptions"
-              optionLabel="label"
-              optionValue="value"
-              placeholder="Selecione"
-              class="filter-dropdown"
-              @change="handleFilterChange"
-            />
-          </div>
         </div>
       </div>
       <template #footer>
@@ -125,14 +104,63 @@
       </template>
     </Dialog>
 
+    <!-- Modal de Ordenação -->
+    <Dialog
+      v-model:visible="sortModalVisible"
+      header="Ordenação"
+      :modal="true"
+      :style="{ width: '500px' }"
+      :autoFocus="false"
+      :closable="true"
+      :dismissableMask="true"
+      class="sort-modal"
+    >
+      <div class="sort-section">
+        <div class="sort-options">
+          <div
+            v-for="option in sortOptions"
+            :key="option.value"
+            class="sort-option"
+            @click="selectedSort = option.value"
+          >
+            <input
+              type="radio"
+              :id="`sort-${option.value}`"
+              :value="option.value"
+              v-model="selectedSort"
+              class="sort-radio"
+            />
+            <label :for="`sort-${option.value}`" class="sort-label">
+              <span class="sort-icon">{{ option.icon }}</span>
+              <span class="sort-text">{{ option.label }}</span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <template #footer>
+        <Button
+          label="Cancelar"
+          severity="secondary"
+          outlined
+          @click="sortModalVisible = false"
+          class="cancel-button"
+        />
+        <Button
+          label="Aplicar"
+          @click="handleApplySort"
+          class="apply-button"
+        />
+      </template>
+    </Dialog>
+
     <div v-if="filmStore.loading" class="loading">
       <ProgressSpinner />
       <p>Buscando filmes...</p>
     </div>
 
-    <div v-else-if="filmStore.movies.length > 0" class="movies-grid">
+    <TransitionGroup v-else-if="filmStore.movies.length > 0" name="fade" tag="div" class="movies-grid">
       <div
-        v-for="movie in filmStore.movies.slice(0, 15)"
+        v-for="movie in displayedMovies"
         :key="movie.id"
         class="movie-card"
         @mouseenter="handleMouseEnter(movie)"
@@ -158,7 +186,12 @@
             >
               <i :class="favoriteStore.isFavorite(movie.id) ? 'pi pi-star-fill' : 'pi pi-star'"></i>
             </button>
-            <span class="movie-rating">{{ movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A' }}</span>
+            <span class="movie-rating">
+              {{ movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A' }}
+              <span class="movie-vote-count" v-if="movie.vote_count">
+                ({{ formatVoteCount(movie.vote_count) }})
+              </span>
+            </span>
           </div>
           
           <!-- Ícones de controle no topo -->
@@ -279,7 +312,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </TransitionGroup>
 
     <div v-else-if="filmStore.searchQuery && !filmStore.loading" class="no-results">
       <p>Nenhum filme encontrado para "{{ filmStore.searchQuery }}"</p>
@@ -308,6 +341,7 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
+import { TransitionGroup } from 'vue'
 import { useFilmStore } from '@/stores/film'
 import { useFavoriteStore } from '@/stores/favorite'
 import InputText from 'primevue/inputtext'
@@ -335,9 +369,22 @@ const loadingInfo = ref({})
 const filtersModalVisible = ref(false)
 const selectedGenre = ref(null)
 const selectedYear = ref(null)
-const selectedRating = ref(null)
-const selectedCertification = ref(null)
 const currentYear = computed(() => new Date().getFullYear())
+
+// Ordenação
+const sortModalVisible = ref(false)
+const selectedSort = ref('popularity.desc')
+
+const sortOptions = [
+  { label: 'Popularidade (Mais Popular)', value: 'popularity.desc', icon: '🔥' },
+  { label: 'Popularidade (Menos Popular)', value: 'popularity.asc', icon: '📉' },
+  { label: 'Avaliação (Melhor Avaliado)', value: 'vote_average.desc', icon: '⭐' },
+  { label: 'Avaliação (Pior Avaliado)', value: 'vote_average.asc', icon: '📊' },
+  { label: 'Data de Lançamento (Mais Recente)', value: 'release_date.desc', icon: '📅' },
+  { label: 'Data de Lançamento (Mais Antigo)', value: 'release_date.asc', icon: '📆' },
+  { label: 'Número de Votos (Mais Votados)', value: 'vote_count.desc', icon: '👍' },
+  { label: 'Número de Votos (Menos Votados)', value: 'vote_count.asc', icon: '👎' }
+]
 
 // Opções de anos (de 1990 até o ano atual)
 const yearOptions = computed(() => {
@@ -368,32 +415,16 @@ const yearDropdownOptions = computed(() => {
   return options
 })
 
-const ratingOptions = [
-  { label: '0.0', value: '0' },
-  { label: '1.0', value: '1' },
-  { label: '2.0', value: '2' },
-  { label: '3.0', value: '3' },
-  { label: '4.0', value: '4' },
-  { label: '5.0', value: '5' },
-  { label: '6.0', value: '6' },
-  { label: '7.0', value: '7' },
-  { label: '8.0', value: '8' },
-  { label: '9.0', value: '9' },
-  { label: '10.0', value: '10' }
-]
+// Filmes exibidos (limitados a 15)
+const displayedMovies = computed(() => {
+  return filmStore.movies.slice(0, 15)
+})
 
-const certificationOptions = [
-  { label: 'Livre', value: 'L' },
-  { label: '10 anos', value: '10' },
-  { label: '12 anos', value: '12' },
-  { label: '14 anos', value: '14' },
-  { label: '16 anos', value: '16' },
-  { label: '18 anos', value: '18' }
-]
-
-onMounted(() => {
+onMounted(async () => {
   favoriteStore.fetchFavorites()
   filmStore.fetchGenres()
+  // Carregar todos os filmes ao iniciar
+  await filmStore.discoverMovies({ genre: null, year: null }, 1, 'popularity.desc')
 })
 
 async function handleSearch() {
@@ -438,10 +469,12 @@ async function handleApplyFilters() {
 
   const filters = {
     genre: selectedGenre.value,
-    year: year,
-    rating: selectedRating.value !== null && selectedRating.value !== undefined && selectedRating.value !== '' ? parseFloat(selectedRating.value) : null,
-    certification: selectedCertification.value
+    year: year
   }
+
+  console.log('🔍 Filtros aplicados:', {
+    filters: filters
+  })
 
   // Verificar se pelo menos um filtro está preenchido
   const hasFilters = Object.values(filters).some(v => v !== null && v !== '')
@@ -457,15 +490,24 @@ async function handleApplyFilters() {
   }
 
   filmStore.setFilters(filters)
-  await filmStore.discoverMovies(filters, 1)
+  await filmStore.discoverMovies(filters, 1, selectedSort.value)
   filtersModalVisible.value = false
+}
+
+function handleApplySort() {
+  console.log('🔄 Aplicando ordenação:', {
+    selectedSort: selectedSort.value,
+    currentPage: filmStore.currentPage,
+    filters: filmStore.filters
+  })
+  const filters = filmStore.filters
+  filmStore.discoverMovies(filters, filmStore.currentPage, selectedSort.value)
+  sortModalVisible.value = false
 }
 
 function handleClearFilters() {
   selectedGenre.value = null
   selectedYear.value = null
-  selectedRating.value = null
-  selectedCertification.value = null
   filmStore.clearFilters()
   filmStore.clearSearch()
 }
@@ -595,15 +637,16 @@ async function toggleFavorite(movie) {
   }
 }
 
-function goToPage(page) {
+async function goToPage(page) {
   if (page >= 1 && page <= filmStore.totalPages) {
-    // Se há filtros ativos, usar discover; senão, usar search
-    const hasActiveFilters = Object.values(filmStore.filters).some(v => v !== null && v !== '')
+    // Se há busca ativa, usar search; senão, usar discover
+    const hasSearchQuery = filmStore.searchQuery && filmStore.searchQuery.trim() !== ''
     
-    if (hasActiveFilters) {
-      filmStore.discoverMovies(filmStore.filters, page)
-    } else if (filmStore.searchQuery) {
-      filmStore.searchMovies(filmStore.searchQuery, page)
+    if (hasSearchQuery) {
+      await filmStore.searchMovies(filmStore.searchQuery, page)
+    } else {
+      // Sem busca, usar discover (com ou sem filtros)
+      await filmStore.discoverMovies(filmStore.filters, page, selectedSort.value)
     }
   }
 }
@@ -634,6 +677,15 @@ function getDirector(movieInfo) {
   
   return directors.map(d => d.name).join(', ')
 }
+
+function formatVoteCount(count) {
+  if (count >= 1000000) {
+    return (count / 1000000).toFixed(1) + 'M'
+  } else if (count >= 1000) {
+    return (count / 1000).toFixed(1) + 'K'
+  }
+  return count.toString()
+}
 </script>
 
 <style scoped>
@@ -649,12 +701,20 @@ function getDirector(movieInfo) {
 }
 
 .header h1 {
-  font-size: 2.5rem;
+  font-size: 1.8rem;
   margin-bottom: 0.5rem;
+  text-transform: uppercase;
 }
 
 .search-section {
   margin-bottom: 2rem;
+}
+
+.search-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: flex-end;
 }
 
 .search-box {
@@ -663,12 +723,15 @@ function getDirector(movieInfo) {
   align-items: center;
 }
 
-.search-input {
-  flex: 1;
+.filters-button-section {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
 }
 
-.filters-button-section {
-  margin-bottom: 2rem;
+.search-input {
+  width: 300px;
+  max-width: 300px;
 }
 
 /* Estilos da Modal de Filtros */
@@ -826,6 +889,127 @@ function getDirector(movieInfo) {
   background: #4f46e5;
 }
 
+/* Estilos da Modal de Ordenação */
+:deep(.sort-modal) {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+:deep(.sort-modal .p-dialog-header) {
+  background: #ffffff;
+  border-bottom: 1px solid #e9ecef;
+  padding: 1.5rem;
+  border-radius: 12px 12px 0 0;
+}
+
+:deep(.sort-modal .p-dialog-title) {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+:deep(.sort-modal .p-dialog-content) {
+  padding: 1.5rem;
+  background: #ffffff;
+}
+
+:deep(.sort-modal .p-dialog-footer) {
+  background: #ffffff;
+  border-top: 1px solid #e9ecef;
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  border-radius: 0 0 12px 12px;
+}
+
+.sort-section {
+  padding: 0;
+}
+
+.sort-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sort-option {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #ffffff;
+}
+
+.sort-option:hover {
+  border-color: #6366f1;
+  background: #f8f9ff;
+}
+
+.sort-option:has(.sort-radio:checked) {
+  border-color: #6366f1;
+  background: #eef2ff;
+}
+
+.sort-radio {
+  margin: 0;
+  margin-right: 0.75rem;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #6366f1;
+}
+
+.sort-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  flex: 1;
+  font-size: 1rem;
+  color: #1e293b;
+}
+
+.sort-icon {
+  font-size: 1.25rem;
+}
+
+.sort-text {
+  font-weight: 500;
+}
+
+:deep(.cancel-button) {
+  background: #ffffff;
+  color: #6366f1;
+  border: 1px solid #6366f1;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+:deep(.cancel-button:hover) {
+  background: #eef2ff;
+  border-color: #6366f1;
+}
+
+:deep(.apply-button) {
+  background: #6366f1;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+:deep(.apply-button:hover) {
+  background: #4f46e5;
+}
+
 .filters-actions {
   display: flex;
   gap: 1rem;
@@ -846,6 +1030,31 @@ function getDirector(movieInfo) {
   grid-template-columns: repeat(3, 1fr);
   gap: 2rem;
   margin-bottom: 2rem;
+}
+
+/* Transições para remoção suave */
+.fade-enter-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.fade-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.fade-enter-from {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+.fade-leave-to {
+  opacity: 0;
+  transform: scale(0.9) translateY(-20px);
+}
+
+.fade-enter-to,
+.fade-leave-from {
+  opacity: 1;
+  transform: scale(1);
 }
 
 @media (max-width: 1024px) {
@@ -985,10 +1194,19 @@ function getDirector(movieInfo) {
 }
 
 .movie-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
   color: #ffffff;
   font-size: 1rem;
   font-weight: 600;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.movie-vote-count {
+  font-size: 0.85rem;
+  opacity: 0.85;
+  font-weight: 400;
 }
 
 @keyframes starFloat {
