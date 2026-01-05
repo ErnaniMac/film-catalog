@@ -68,4 +68,52 @@ class AuthController extends Controller
 
         return response()->json($user, 200);
     }
+
+    /**
+     * Update user profile (name)
+     */
+    public function updateProfile(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $user = $request->user();
+        $user->update(['name' => $validated['name']]);
+        $user->load('roles', 'permissions');
+
+        return response()->json([
+            'message' => 'Perfil atualizado com sucesso',
+            'user' => $user
+        ], 200);
+    }
+
+    /**
+     * Update user password
+     */
+    public function updatePassword(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'current_password' => 'required|string',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $user = $request->user();
+
+        // Verificar senha atual
+        if (!Hash::check($validated['current_password'], $user->password)) {
+            return response()->json([
+                'message' => 'Senha atual incorreta'
+            ], 422);
+        }
+
+        // Atualizar senha
+        $user->update([
+            'password' => Hash::make($validated['password'])
+        ]);
+
+        return response()->json([
+            'message' => 'Senha atualizada com sucesso'
+        ], 200);
+    }
 }
