@@ -86,8 +86,10 @@ async function handleLogin() {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
+  min-height: calc(100vh - 200px);
+  padding: 2rem 1rem;
   background: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%);
+  flex: 1;
 }
 
 .login-card {
