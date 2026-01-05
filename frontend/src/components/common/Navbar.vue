@@ -2,29 +2,44 @@
   <nav class="navbar">
     <div class="navbar-content">
       <div class="navbar-brand">
-        <router-link to="/films" class="brand-link">
+        <router-link to="/" class="brand-link">
           <h2>Cine Catálogo</h2>
         </router-link>
       </div>
 
       <div class="navbar-menu">
         <router-link to="/films" class="nav-link">Filmes</router-link>
-        <router-link to="/favorites" class="nav-link">Favoritos</router-link>
+        <router-link v-if="authStore.isAuthenticated && authStore.user" to="/favorites" class="nav-link">Favoritos</router-link>
         <router-link v-if="authStore.isAdmin" to="/admin" class="nav-link">Admin</router-link>
       </div>
 
       <div class="navbar-actions">
-        <span v-if="authStore.user" class="user-info">
-          {{ authStore.user.name }}
-        </span>
-        <Button
-          v-if="authStore.isAuthenticated && authStore.user"
-          label="Sair"
-          icon="pi pi-sign-out"
-          severity="danger"
-          text
-          @click="handleLogout"
-        />
+        <template v-if="authStore.isAuthenticated && authStore.user">
+          <span class="user-info">
+            {{ authStore.user.name }}
+          </span>
+          <Button
+            label="Sair"
+            icon="pi pi-sign-out"
+            severity="danger"
+            text
+            @click="handleLogout"
+          />
+        </template>
+        <template v-else>
+          <Button
+            label="Login"
+            icon="pi pi-sign-in"
+            severity="secondary"
+            outlined
+            @click="router.push('/login')"
+          />
+          <Button
+            label="Criar Conta"
+            icon="pi pi-user-plus"
+            @click="router.push('/register')"
+          />
+        </template>
       </div>
     </div>
   </nav>
