@@ -344,6 +344,8 @@ import { ref, onMounted, computed } from 'vue'
 import { TransitionGroup } from 'vue'
 import { useFilmStore } from '@/stores/film'
 import { useFavoriteStore } from '@/stores/favorite'
+import { useAuthStore } from '@/stores/auth'
+import { useRouter } from 'vue-router'
 import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
@@ -354,6 +356,8 @@ import dayjs from 'dayjs'
 
 const filmStore = useFilmStore()
 const favoriteStore = useFavoriteStore()
+const authStore = useAuthStore()
+const router = useRouter()
 const toast = useToast()
 
 const searchInput = ref('')
@@ -595,6 +599,12 @@ async function loadInfo(movieId) {
 }
 
 async function toggleFavorite(movie) {
+  // Verificar se o usuário está autenticado
+  if (!authStore.isAuthenticated || !authStore.user) {
+    router.push('/login')
+    return
+  }
+
   if (favoriteStore.isFavorite(movie.id)) {
     // Remover dos favoritos
     const favoriteId = favoriteStore.getFavoriteId(movie.id)
