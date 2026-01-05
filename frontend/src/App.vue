@@ -23,8 +23,8 @@ const showNavbar = computed(() => {
   if (guestRoutes.includes(route.name)) {
     return false
   }
-  // Mostrar navbar apenas se usuário estiver autenticado
-  return authStore.isAuthenticated && !!authStore.user
+  // Mostrar navbar em todas as outras rotas (incluindo quando não autenticado)
+  return true
 })
 </script>
 
