@@ -160,6 +160,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useFavoriteStore } from '@/stores/favorite'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
@@ -169,6 +170,7 @@ import api from '@/composables/useApi'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const favoriteStore = useFavoriteStore()
 const toast = useToast()
 
 const showChangeName = ref(false)
@@ -309,7 +311,11 @@ function resetPasswordForm() {
 
 async function handleLogout() {
   await authStore.logout()
-  router.push('/login')
+  favoriteStore.clearFavorites()
+  router.push('/films').then(() => {
+    // Recarregar a página para garantir que os favoritos sejam atualizados
+    window.location.reload()
+  })
 }
 </script>
 

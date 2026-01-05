@@ -66,6 +66,11 @@ export const useFavoriteStore = defineStore('favorite', () => {
     return favorite?.id
   }
 
+  function clearFavorites() {
+    favorites.value = []
+    selectedGenre.value = null
+  }
+
   return {
     favorites,
     loading,
@@ -74,7 +79,8 @@ export const useFavoriteStore = defineStore('favorite', () => {
     addFavorite,
     removeFavorite,
     isFavorite,
-    getFavoriteId
+    getFavoriteId,
+    clearFavorites
   }
 })
 
