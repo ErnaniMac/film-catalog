@@ -33,7 +33,7 @@
 
     <TransitionGroup v-else-if="favoriteStore.favorites.length > 0" name="fade" tag="div" class="movies-grid">
       <div
-        v-for="favorite in favoriteStore.favorites"
+        v-for="favorite in paginatedFavorites"
         :key="favorite.id"
         class="movie-card"
         @mouseenter="handleMouseEnter(favorite)"
@@ -192,11 +192,30 @@
         @click="$router.push('/films')"
       />
     </div>
+
+    <div v-if="favoriteStore.favorites.length > 0" class="pagination">
+      <Button
+        label="Anterior"
+        icon="pi pi-chevron-left"
+        :disabled="currentPage === 1"
+        @click="goToPage(currentPage - 1)"
+      />
+      <span class="page-info">
+        Página {{ currentPage }} de {{ totalPages }}
+      </span>
+      <Button
+        label="Próxima"
+        icon="pi pi-chevron-right"
+        iconPos="right"
+        :disabled="currentPage >= totalPages"
+        @click="goToPage(currentPage + 1)"
+      />
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useFavoriteStore } from '@/stores/favorite'
 import { useFilmStore } from '@/stores/film'
 import Button from 'primevue/button'
@@ -220,6 +239,8 @@ const movieDetails = ref({})
 const loadingCast = ref({})
 const loadingInfo = ref({})
 const selectedGenre = ref(null)
+const currentPage = ref(1)
+const itemsPerPage = 15
 
 // Opções de gêneros
 const genreOptions = computed(() => {
@@ -231,6 +252,17 @@ const genreOptions = computed(() => {
     })))
   }
   return options
+})
+
+// Paginação
+const totalPages = computed(() => {
+  return Math.ceil(favoriteStore.favorites.length / itemsPerPage)
+})
+
+const paginatedFavorites = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return favoriteStore.favorites.slice(start, end)
 })
 
 onMounted(async () => {
@@ -253,13 +285,31 @@ onMounted(async () => {
 })
 
 function handleGenreChange() {
+  currentPage.value = 1 // Resetar para primeira página ao mudar filtro
   favoriteStore.fetchFavorites(selectedGenre.value)
 }
 
 function clearFilter() {
+  currentPage.value = 1 // Resetar para primeira página ao limpar filtro
   selectedGenre.value = null
   favoriteStore.fetchFavorites(null)
 }
+
+function goToPage(page) {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page
+    // Scroll para o topo da página
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+}
+
+// Ajustar página atual se necessário quando a lista de favoritos mudar
+watch(() => favoriteStore.favorites.length, (newLength, oldLength) => {
+  // Se a lista diminuiu e a página atual ficou vazia, voltar para a última página válida
+  if (newLength < oldLength && currentPage.value > totalPages.value && totalPages.value > 0) {
+    currentPage.value = totalPages.value
+  }
+})
 
 function handleMouseEnter(favorite) {
   hoveredMovie.value = favorite.id
