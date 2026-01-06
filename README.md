@@ -48,7 +48,7 @@ cp frontend/.env.example frontend/.env
 docker-compose up -d
 ```
 
-### 6. Acesse a Aplicação
+### 4. Acesse a Aplicação
 
 - **Web**: http://localhost:5173
 
