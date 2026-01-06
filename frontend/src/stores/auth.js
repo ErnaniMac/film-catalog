@@ -61,10 +61,19 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  // Função para limpar completamente o estado de autenticação
+  function clearAuth() {
+    token.value = null
+    user.value = null
+    localStorage.removeItem('token')
+  }
+
   // Função para inicializar autenticação a partir do localStorage
   async function initializeAuth() {
     const storedToken = localStorage.getItem('token')
     if (!storedToken) {
+      // Garantir que tudo está limpo
+      clearAuth()
       return
     }
 
@@ -75,14 +84,11 @@ export const useAuthStore = defineStore('auth', () => {
       const result = await fetchUser()
       if (!result.success) {
         // Se falhar, limpar tudo
-        token.value = null
-        localStorage.removeItem('token')
+        clearAuth()
       }
     } catch (error) {
-      // Se houver erro, limpar tudo
-      token.value = null
-      user.value = null
-      localStorage.removeItem('token')
+      // Se houver erro (incluindo 401), limpar tudo
+      clearAuth()
     } finally {
       isLoading.value = false
     }
@@ -97,7 +103,8 @@ export const useAuthStore = defineStore('auth', () => {
     login,
     logout,
     fetchUser,
-    initializeAuth
+    initializeAuth,
+    clearAuth
   }
 })
 

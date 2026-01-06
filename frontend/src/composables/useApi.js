@@ -115,12 +115,16 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       const authStore = useAuthStore()
-      // Só fazer logout e redirecionar se ainda houver token (evita loop)
+      // Limpar autenticação se houver token inválido
       if (authStore.token) {
-        authStore.logout()
-        // Não redirecionar se já estiver na página de login ou se o logout foi intencional
-        if (!window.location.pathname.includes('/login')) {
-          window.location.href = '/login'
+        authStore.clearAuth()
+        // Não redirecionar se já estiver na página de login ou register
+        const currentPath = window.location.pathname
+        if (!currentPath.includes('/login') && !currentPath.includes('/register')) {
+          // Usar router se disponível, senão usar window.location
+          setTimeout(() => {
+            window.location.href = '/login'
+          }, 100)
         }
       }
     }
