@@ -14,10 +14,29 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $users = User::with('roles', 'permissions')->get();
-        return response()->json(['data' => $users], 200);
+        // Se não houver parâmetros de paginação, retornar todos (compatibilidade)
+        if (!$request->has('per_page') && !$request->has('page')) {
+            $users = User::with('roles', 'permissions')->get();
+            return response()->json(['data' => $users], 200);
+        }
+        
+        $perPage = $request->get('per_page', 10);
+        $page = $request->get('page', 1);
+        
+        $users = User::with('roles', 'permissions')
+            ->paginate($perPage, ['*'], 'page', $page);
+        
+        return response()->json([
+            'data' => $users->items(),
+            'meta' => [
+                'current_page' => $users->currentPage(),
+                'last_page' => $users->lastPage(),
+                'per_page' => $users->perPage(),
+                'total' => $users->total(),
+            ]
+        ], 200);
     }
 
     /**

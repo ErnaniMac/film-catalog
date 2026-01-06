@@ -12,10 +12,28 @@ class PermissionController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $permissions = Permission::all();
-        return response()->json(['data' => $permissions], 200);
+        // Se não houver parâmetros de paginação, retornar todos (compatibilidade)
+        if (!$request->has('per_page') && !$request->has('page')) {
+            $permissions = Permission::all();
+            return response()->json(['data' => $permissions], 200);
+        }
+        
+        $perPage = $request->get('per_page', 10);
+        $page = $request->get('page', 1);
+        
+        $permissions = Permission::paginate($perPage, ['*'], 'page', $page);
+        
+        return response()->json([
+            'data' => $permissions->items(),
+            'meta' => [
+                'current_page' => $permissions->currentPage(),
+                'last_page' => $permissions->lastPage(),
+                'per_page' => $permissions->perPage(),
+                'total' => $permissions->total(),
+            ]
+        ], 200);
     }
 
     /**

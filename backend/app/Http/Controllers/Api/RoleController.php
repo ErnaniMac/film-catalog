@@ -12,10 +12,29 @@ class RoleController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $roles = Role::with('permissions')->get();
-        return response()->json(['data' => $roles], 200);
+        // Se não houver parâmetros de paginação, retornar todos (compatibilidade)
+        if (!$request->has('per_page') && !$request->has('page')) {
+            $roles = Role::with('permissions')->get();
+            return response()->json(['data' => $roles], 200);
+        }
+        
+        $perPage = $request->get('per_page', 10);
+        $page = $request->get('page', 1);
+        
+        $roles = Role::with('permissions')
+            ->paginate($perPage, ['*'], 'page', $page);
+        
+        return response()->json([
+            'data' => $roles->items(),
+            'meta' => [
+                'current_page' => $roles->currentPage(),
+                'last_page' => $roles->lastPage(),
+                'per_page' => $roles->perPage(),
+                'total' => $roles->total(),
+            ]
+        ], 200);
     }
 
     /**
