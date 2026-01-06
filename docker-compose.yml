@@ -61,7 +61,17 @@ services:
       REDIS_PORT: ${REDIS_PORT:-6379}
       UID: ${HOST_UID:-1000}
       GID: ${HOST_GID:-1000}
-    command: sh -c "if [ ! -d vendor ]; then composer install --no-interaction; fi && php-fpm"
+    command: >
+      sh -c "
+        if ! grep -q 'APP_KEY=base64:' /var/www/html/.env 2>/dev/null; then
+          echo 'Gerando APP_KEY...' &&
+          php artisan key:generate --no-interaction || true
+        fi &&
+        if [ ! -d vendor ]; then
+          composer install --no-interaction
+        fi &&
+        php-fpm
+      "
     networks:
       - film-network
 
