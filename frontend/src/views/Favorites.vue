@@ -4,7 +4,7 @@
       <h1>Meus Favoritos</h1>
     </div>
 
-    <div class="filters-section">
+    <div v-if="!isInitialLoading" class="filters-section">
       <div class="filter-group">
         <label>Filtrar por gênero:</label>
         <Select
@@ -26,12 +26,13 @@
       />
     </div>
 
-    <div v-if="favoriteStore.loading" class="loading">
+    <div v-if="isInitialLoading || favoriteStore.loading" class="loading">
       <ProgressSpinner />
-      <p>Carregando favoritos...</p>
+      <p>{{ isInitialLoading ? 'Carregando favoritos...' : 'Buscando favoritos...' }}</p>
     </div>
 
-    <TransitionGroup v-else-if="favoriteStore.favorites.length > 0" name="fade" tag="div" class="movies-grid">
+    <template v-else>
+      <TransitionGroup v-if="favoriteStore.favorites.length > 0" name="fade" tag="div" class="movies-grid">
       <div
         v-for="favorite in paginatedFavorites"
         :key="favorite.id"
@@ -184,16 +185,16 @@
       </div>
     </TransitionGroup>
 
-    <div v-else class="no-results">
-      <p>Você ainda não tem filmes favoritos.</p>
-      <Button
-        label="Buscar Filmes"
-        icon="pi pi-search"
-        @click="$router.push('/films')"
-      />
-    </div>
+      <div v-else class="no-results">
+        <p>Você ainda não tem filmes favoritos.</p>
+        <Button
+          label="Buscar Filmes"
+          icon="pi pi-search"
+          @click="$router.push('/films')"
+        />
+      </div>
 
-    <div v-if="favoriteStore.favorites.length > 0" class="pagination">
+      <div v-if="favoriteStore.favorites.length > 0" class="pagination">
       <Button
         label="Anterior"
         icon="pi pi-chevron-left"
@@ -210,12 +211,13 @@
         :disabled="currentPage >= totalPages"
         @click="goToPage(currentPage + 1)"
       />
-    </div>
+      </div>
+    </template>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import { useFavoriteStore } from '@/stores/favorite'
 import { useFilmStore } from '@/stores/film'
 import Button from 'primevue/button'
@@ -241,6 +243,7 @@ const loadingInfo = ref({})
 const selectedGenre = ref(null)
 const currentPage = ref(1)
 const itemsPerPage = 15
+const isInitialLoading = ref(true) // Loading inicial da página
 
 // Opções de gêneros
 const genreOptions = computed(() => {
@@ -266,11 +269,44 @@ const paginatedFavorites = computed(() => {
 })
 
 onMounted(async () => {
-  await filmStore.fetchGenres()
-  selectedGenre.value = favoriteStore.selectedGenre
-  await favoriteStore.fetchFavorites(selectedGenre.value)
-  // Carregar detalhes básicos de todos os favoritos para ter rating
-  for (const favorite of favoriteStore.favorites) {
+  isInitialLoading.value = true
+  try {
+    await filmStore.fetchGenres()
+    selectedGenre.value = favoriteStore.selectedGenre
+    await favoriteStore.fetchFavorites(selectedGenre.value)
+    // Carregar detalhes apenas dos favoritos da página atual (primeira página)
+    // Calcular manualmente para garantir que está pegando apenas a página 1
+    const start = 0
+    const end = itemsPerPage
+    const favoritesToLoad = favoriteStore.favorites.slice(start, end)
+    
+    const loadPromises = favoritesToLoad.map(async (favorite) => {
+      if (!movieDetails.value[favorite.tmdb_id]) {
+        try {
+          const details = await filmStore.getMovieDetails(favorite.tmdb_id)
+          if (details) {
+            movieDetails.value[favorite.tmdb_id] = details
+          }
+        } catch (error) {
+          console.error('Erro ao carregar detalhes do filme:', error)
+        }
+      }
+    })
+    // Carregar em paralelo para ser mais rápido
+    await Promise.all(loadPromises)
+  } finally {
+    isInitialLoading.value = false
+  }
+})
+
+// Função para carregar detalhes dos favoritos da página atual
+async function loadCurrentPageDetails() {
+  // Calcular manualmente os favoritos da página atual para evitar problemas com computed
+  const start = (currentPage.value - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  const favoritesToLoad = favoriteStore.favorites.slice(start, end)
+  
+  const loadPromises = favoritesToLoad.map(async (favorite) => {
     if (!movieDetails.value[favorite.tmdb_id]) {
       try {
         const details = await filmStore.getMovieDetails(favorite.tmdb_id)
@@ -281,18 +317,33 @@ onMounted(async () => {
         console.error('Erro ao carregar detalhes do filme:', error)
       }
     }
+  })
+  // Carregar em paralelo
+  await Promise.all(loadPromises)
+}
+
+// Carregar detalhes apenas quando a página mudar (não durante inicialização)
+watch(currentPage, async (newPage, oldPage) => {
+  // Só executar se não estiver na inicialização e se a página realmente mudou
+  if (!isInitialLoading.value && oldPage !== undefined && newPage !== oldPage) {
+    await nextTick()
+    loadCurrentPageDetails()
   }
 })
 
-function handleGenreChange() {
+async function handleGenreChange() {
   currentPage.value = 1 // Resetar para primeira página ao mudar filtro
-  favoriteStore.fetchFavorites(selectedGenre.value)
+  await favoriteStore.fetchFavorites(selectedGenre.value)
+  // Carregar detalhes dos favoritos da nova página
+  await loadCurrentPageDetails()
 }
 
-function clearFilter() {
+async function clearFilter() {
   currentPage.value = 1 // Resetar para primeira página ao limpar filtro
   selectedGenre.value = null
-  favoriteStore.fetchFavorites(null)
+  await favoriteStore.fetchFavorites(null)
+  // Carregar detalhes dos favoritos da nova página
+  await loadCurrentPageDetails()
 }
 
 function goToPage(page) {
