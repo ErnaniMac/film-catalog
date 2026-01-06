@@ -919,6 +919,10 @@ function formatVoteCount(count) {
   color: #666;
 }
 
+.no-results p {
+  margin-bottom: 1.5rem;
+}
+
 .pagination {
   display: flex;
   justify-content: center;

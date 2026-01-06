@@ -80,7 +80,6 @@ export const useFilmStore = defineStore('film', () => {
         }
       }
 
-      console.log('📤 Parâmetros enviados para API:', params)
 
       // Construir query string manualmente para garantir que parâmetros com ponto sejam enviados corretamente
       // O Axios pode converter vote_average.gte em vote_average[gte] se não configurado corretamente
@@ -91,16 +90,9 @@ export const useFilmStore = defineStore('film', () => {
         }
       })
       
-      console.log('🔗 Query string construída:', queryString.toString())
 
       // Usar a query string construída manualmente
       const response = await api.get(`/tmdb/discover?${queryString.toString()}`)
-      
-      console.log('📥 Resposta da API:', {
-        totalResults: response.data.total_results,
-        resultsCount: response.data.results?.length,
-        page: response.data.page
-      })
 
       movies.value = response.data.results || []
       currentPage.value = response.data.page || 1

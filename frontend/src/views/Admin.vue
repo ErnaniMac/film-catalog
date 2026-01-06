@@ -338,10 +338,6 @@ onMounted(async () => {
     await adminStore.fetchRoles()
     await adminStore.fetchPermissions()
     
-    console.log('Dados carregados:')
-    console.log('Users:', adminStore.users.length)
-    console.log('Roles:', adminStore.roles.length)
-    console.log('Permissions:', adminStore.permissions.length)
   } catch (error) {
     console.error('Erro ao carregar dados:', error)
     toast.add({

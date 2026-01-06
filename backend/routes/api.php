@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\PermissionController;
 use App\Http\Controllers\Api\RegisterController;
 use App\Http\Controllers\Api\PasswordResetController;
+use App\Http\Controllers\Api\GoogleAuthController;
 
 // Public routes
 Route::post('/login', [AuthController::class, 'login']);
@@ -21,6 +22,10 @@ Route::get('/tmdb/genres', [TmdbController::class, 'genres']);
 Route::post('/register', [RegisterController::class, 'register']);
 Route::get('/email/verify', [RegisterController::class, 'verify']);
 Route::post('/email/verification-notification', [RegisterController::class, 'resendVerification']);
+
+// Google OAuth
+Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect']);
+Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback']);
 
 // Password reset
 Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink']);

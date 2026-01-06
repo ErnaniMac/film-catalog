@@ -40,6 +40,11 @@ const router = createRouter({
       meta: { requiresGuest: true }
     },
     {
+      path: '/auth/google/callback',
+      name: 'google-callback',
+      component: () => import('@/views/GoogleCallback.vue')
+    },
+    {
       path: '/films',
       name: 'films',
       component: () => import('@/views/Films.vue')

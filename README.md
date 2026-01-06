@@ -26,6 +26,7 @@ Este projeto é um catálogo de filmes que permite:
 - Adicionar/remover filmes aos favoritos
 - Gerenciar usuários, roles e permissões (admin)
 - Autenticação via Laravel Sanctum
+- Login e cadastro com Google OAuth
 - Interface moderna com Vue 3 e PrimeVue
 
 ## 🛠 Tecnologias
@@ -33,6 +34,7 @@ Este projeto é um catálogo de filmes que permite:
 ### Backend
 - **Laravel 12** - Framework PHP
 - **Laravel Sanctum** - Autenticação API
+- **Laravel Socialite** - OAuth com Google
 - **Spatie Laravel Permission** - Roles e permissões
 - **Predis** - Cliente Redis
 - **MySQL** - Banco de dados
@@ -122,9 +124,17 @@ MAIL_MAILER=resend
 MAIL_FROM_ADDRESS=noreply@seudominio.com
 MAIL_FROM_NAME="${APP_NAME}"
 RESEND_KEY=re_sua_chave_resend_aqui
+
+# Google OAuth (para login/cadastro com Google)
+# Obtenha as credenciais em: https://console.cloud.google.com/apis/credentials
+GOOGLE_CLIENT_ID=seu_client_id_aqui
+GOOGLE_CLIENT_SECRET=seu_client_secret_aqui
+GOOGLE_REDIRECT_URI=http://localhost:8000/api/auth/google/callback
 ```
 
-**Importante**: Você precisará obter uma chave de API do TMDB. Veja a seção [Link para Obter a Chave da API do TMDB](#link-para-obter-a-chave-da-api-do-tmdb).
+**Importante**: Você precisará obter:
+- Uma chave de API do TMDB. Veja a seção [Link para Obter a Chave da API do TMDB](#link-para-obter-a-chave-da-api-do-tmdb).
+- (Opcional) Credenciais do Google OAuth para login/cadastro com Google. Veja a seção [Configuração do Google OAuth](#configuração-do-google-oauth).
 
 #### Frontend (.env)
 
@@ -567,6 +577,68 @@ A API do TMDB tem limites de rate:
 - **40 requisições por 10 segundos** para cada IP
 - O projeto implementa cache para reduzir chamadas à API
 
+## 🔐 Configuração do Google OAuth
+
+Para habilitar login e cadastro com Google, você precisa configurar as credenciais OAuth do Google:
+
+### Passo a Passo
+
+1. **Acesse o Google Cloud Console**:
+   - URL: https://console.cloud.google.com/
+
+2. **Crie um novo projeto ou selecione um existente**:
+   - Clique em "Selecionar projeto" no topo
+   - Clique em "Novo Projeto"
+   - Dê um nome ao projeto (ex: "Film Catalog")
+   - Clique em "Criar"
+
+3. **Ative a API do Google+**:
+   - No menu lateral, vá em "APIs e Serviços" > "Biblioteca"
+   - Procure por "Google+ API" ou "Google Identity"
+   - Clique em "Ativar"
+
+4. **Crie as credenciais OAuth 2.0**:
+   - Vá em "APIs e Serviços" > "Credenciais"
+   - Clique em "Criar credenciais" > "ID do cliente OAuth"
+   - Selecione "Aplicativo da Web"
+   - Configure:
+     - **Nome**: Film Catalog (ou qualquer nome)
+     - **URIs de redirecionamento autorizados**: 
+       - `http://localhost:8000/api/auth/google/callback` (desenvolvimento)
+       - `https://seudominio.com/api/auth/google/callback` (produção)
+   - Clique em "Criar"
+
+5. **Copie as credenciais**:
+   - Você verá o **ID do cliente** e o **Segredo do cliente**
+   - Copie ambos
+
+6. **Configure no projeto**:
+   - Abra o arquivo `backend/.env`
+   - Adicione ou atualize as linhas:
+     ```env
+     GOOGLE_CLIENT_ID=seu_client_id_aqui
+     GOOGLE_CLIENT_SECRET=seu_client_secret_aqui
+     GOOGLE_REDIRECT_URI=http://localhost:8000/api/auth/google/callback
+     ```
+   - Salve o arquivo
+   - Reinicie o container Laravel:
+     ```bash
+     docker-compose restart laravel
+     ```
+
+### Links Úteis
+
+- **Google Cloud Console**: https://console.cloud.google.com/
+- **Documentação OAuth 2.0**: https://developers.google.com/identity/protocols/oauth2
+- **Guia de Configuração**: https://developers.google.com/identity/protocols/oauth2/web-server
+
+### Notas Importantes
+
+- O Google OAuth é **opcional**. O sistema funciona normalmente sem ele, usando apenas login/registro tradicional.
+- Em produção, certifique-se de atualizar o `GOOGLE_REDIRECT_URI` com a URL correta do seu domínio.
+- O email do usuário será automaticamente verificado quando fizer login/cadastro com Google.
+
+
 ## 🎨 Como Subir o Frontend Separado
 
 **Importante**: O frontend **NÃO requer execução separada** pois já está completamente dockerizado e integrado ao `docker-compose.yml`.
@@ -653,6 +725,8 @@ film-catalog/
 - `POST /api/register` - Registrar novo usuário
 - `POST /api/forgot-password` - Solicitar reset de senha
 - `POST /api/reset-password` - Resetar senha
+- `GET /api/auth/google/redirect` - Redirecionar para Google OAuth
+- `GET /api/auth/google/callback` - Callback do Google OAuth
 
 ### Filmes (TMDB)
 - `GET /api/tmdb/search?query={query}&page={page}` - Buscar filmes

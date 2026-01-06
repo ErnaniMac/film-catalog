@@ -476,10 +476,6 @@ async function handleApplyFilters() {
     year: year
   }
 
-  console.log('🔍 Filtros aplicados:', {
-    filters: filters
-  })
-
   // Verificar se pelo menos um filtro está preenchido
   const hasFilters = Object.values(filters).some(v => v !== null && v !== '')
 
@@ -499,11 +495,6 @@ async function handleApplyFilters() {
 }
 
 function handleApplySort() {
-  console.log('🔄 Aplicando ordenação:', {
-    selectedSort: selectedSort.value,
-    currentPage: filmStore.currentPage,
-    filters: filmStore.filters
-  })
   const filters = filmStore.filters
   filmStore.discoverMovies(filters, filmStore.currentPage, selectedSort.value)
   sortModalVisible.value = false

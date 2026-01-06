@@ -40,4 +40,10 @@ return [
         'api_url' => env('TMDB_API_URL', 'https://api.themoviedb.org/3'),
     ],
 
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI', env('APP_URL', 'http://localhost:8000') . '/api/auth/google/callback'),
+    ],
+
 ];
