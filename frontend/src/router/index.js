@@ -73,17 +73,27 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
   
+  // Se está tentando acessar login ou register, sempre permitir (mesmo com token inválido)
+  if (to.name === 'login' || to.name === 'register') {
+    // Se tem token mas não tem usuário, limpar antes de permitir acesso
+    if (authStore.token && !authStore.user) {
+      authStore.clearAuth()
+    }
+    next()
+    return
+  }
+  
   // Se tem token mas não tem usuário, validar token buscando usuário
-  if (authStore.token && !authStore.user) {
+  if (authStore.token && !authStore.user && !authStore.isLoading) {
     try {
       const result = await authStore.fetchUser()
-      // Se falhar ao buscar usuário, token é inválido
+      // Se falhar ao buscar usuário, token é inválido - limpar tudo
       if (!result.success) {
-        authStore.logout()
+        authStore.clearAuth()
       }
     } catch (error) {
       // Se falhar, limpar token
-      authStore.logout()
+      authStore.clearAuth()
     }
   }
   
@@ -95,7 +105,7 @@ router.beforeEach(async (to, from, next) => {
   
   // Rotas que requerem autenticação
   if (to.meta.requiresAuth) {
-    if (!authStore.isAuthenticated || !authStore.user) {
+    if (!authStore.isAuthenticated || !authStore.user || !authStore.user.name) {
       next({ name: 'login' })
       return
     }
@@ -103,9 +113,14 @@ router.beforeEach(async (to, from, next) => {
   
   // Rotas que requerem ser guest (não autenticado)
   if (to.meta.requiresGuest) {
-    if (authStore.isAuthenticated && authStore.user) {
+    // Permitir acesso se não estiver autenticado OU se o token for inválido
+    if (authStore.isAuthenticated && authStore.user && authStore.user.name) {
       next({ name: 'films' })
       return
+    }
+    // Se tem token mas não tem usuário válido, limpar e permitir acesso
+    if (authStore.token && !authStore.user) {
+      authStore.clearAuth()
     }
   }
   
