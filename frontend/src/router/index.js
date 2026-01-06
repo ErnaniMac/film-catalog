@@ -6,8 +6,7 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      name: 'home',
-      component: () => import('@/views/Home.vue')
+      redirect: '/films'
     },
     {
       path: '/login',
@@ -95,12 +94,6 @@ router.beforeEach(async (to, from, next) => {
       // Se falhar, limpar token
       authStore.clearAuth()
     }
-  }
-  
-  // Rota home: sempre redireciona para /films
-  if (to.name === 'home') {
-    next({ name: 'films' })
-    return
   }
   
   // Rotas que requerem autenticação
