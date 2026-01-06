@@ -115,8 +115,14 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       const authStore = useAuthStore()
-      authStore.logout()
-      window.location.href = '/login'
+      // Só fazer logout e redirecionar se ainda houver token (evita loop)
+      if (authStore.token) {
+        authStore.logout()
+        // Não redirecionar se já estiver na página de login ou se o logout foi intencional
+        if (!window.location.pathname.includes('/login')) {
+          window.location.href = '/login'
+        }
+      }
     }
     
     // Não logar erros de validação (422) como erros no console

@@ -7,7 +7,7 @@
     <div class="filters-section">
       <div class="filter-group">
         <label>Filtrar por gênero:</label>
-        <Dropdown
+        <Select
           v-model="selectedGenre"
           :options="genreOptions"
           optionLabel="label"
@@ -220,7 +220,7 @@ import { useFavoriteStore } from '@/stores/favorite'
 import { useFilmStore } from '@/stores/film'
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
-import Dropdown from 'primevue/dropdown'
+import Select from 'primevue/select'
 import { useToast } from 'primevue/usetoast'
 import { useRouter } from 'vue-router'
 import dayjs from 'dayjs'

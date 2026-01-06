@@ -59,7 +59,7 @@
         <div class="filters-grid">
           <div class="filter-item">
             <label for="genre-filter">Gênero</label>
-            <Dropdown
+            <Select
               id="genre-filter"
               v-model="selectedGenre"
               :options="genreOptions"
@@ -73,7 +73,7 @@
 
           <div class="filter-item">
             <label for="year-filter">Ano</label>
-            <Dropdown
+            <Select
               id="year-filter"
               v-model="selectedYear"
               :options="yearDropdownOptions"
@@ -350,7 +350,7 @@ import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
 import Dialog from 'primevue/dialog'
-import Dropdown from 'primevue/dropdown'
+import Select from 'primevue/select'
 import { useToast } from 'primevue/usetoast'
 import dayjs from 'dayjs'
 
@@ -399,7 +399,7 @@ const yearOptions = computed(() => {
   return years.reverse() // Mais recentes primeiro
 })
 
-// Opções formatadas para os Dropdowns
+// Opções formatadas para os Selects
 const genreOptions = computed(() => {
   return filmStore.genres.map(genre => ({
     label: genre.name,
@@ -425,7 +425,10 @@ const displayedMovies = computed(() => {
 })
 
 onMounted(async () => {
-  favoriteStore.fetchFavorites()
+  // Só buscar favoritos se o usuário estiver autenticado
+  if (authStore.isAuthenticated) {
+    favoriteStore.fetchFavorites()
+  }
   filmStore.fetchGenres()
   // Carregar todos os filmes ao iniciar
   await filmStore.discoverMovies({ genre: null, year: null }, 1, 'popularity.desc')
@@ -803,25 +806,25 @@ function formatVoteCount(count) {
   transition: all 0.2s;
 }
 
-/* Estilos para Dropdown do PrimeVue */
+/* Estilos para Select do PrimeVue */
 :deep(.filter-dropdown) {
   width: 100%;
 }
 
-:deep(.filter-dropdown .p-dropdown) {
+:deep(.filter-dropdown .p-select) {
   width: 100%;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   background: #ffffff;
 }
 
-:deep(.filter-dropdown .p-dropdown-label) {
+:deep(.filter-dropdown .p-select-label) {
   padding: 0.75rem;
   color: #1e293b;
   font-size: 0.95rem;
 }
 
-:deep(.filter-dropdown .p-dropdown-panel) {
+:deep(.filter-dropdown .p-select-overlay) {
   max-height: 200px !important;
   overflow-y: auto;
   border: 1px solid #e2e8f0;
@@ -829,22 +832,22 @@ function formatVoteCount(count) {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-:deep(.filter-dropdown .p-dropdown-items-wrapper) {
+:deep(.filter-dropdown .p-select-list) {
   max-height: 200px !important;
   overflow-y: auto;
 }
 
-:deep(.filter-dropdown .p-dropdown-item) {
+:deep(.filter-dropdown .p-select-item) {
   padding: 0.75rem;
   color: #1e293b;
   font-size: 0.95rem;
 }
 
-:deep(.filter-dropdown .p-dropdown-item:hover) {
+:deep(.filter-dropdown .p-select-item:hover) {
   background: #f1f5f9;
 }
 
-:deep(.filter-dropdown .p-dropdown-item.p-highlight) {
+:deep(.filter-dropdown .p-select-item.p-highlight) {
   background: #eef2ff;
   color: #6366f1;
 }
@@ -855,7 +858,7 @@ function formatVoteCount(count) {
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
-:deep(.filter-dropdown .p-dropdown:focus-within) {
+:deep(.filter-dropdown .p-select:focus-within) {
   border-color: #6366f1;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
