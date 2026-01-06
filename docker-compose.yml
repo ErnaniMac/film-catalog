@@ -61,6 +61,7 @@ services:
       REDIS_PORT: ${REDIS_PORT:-6379}
       UID: ${HOST_UID:-1000}
       GID: ${HOST_GID:-1000}
+    command: sh -c "if [ ! -d vendor ]; then composer install --no-interaction; fi && php-fpm"
     networks:
       - film-network
 
