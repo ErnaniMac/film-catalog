@@ -37,6 +37,7 @@ class UserController extends Controller
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
+            'email_verified_at' => now(), // Usuários criados pelo admin já têm email verificado
         ]);
 
         if (isset($validated['roles'])) {
