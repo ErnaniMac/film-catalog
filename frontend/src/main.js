@@ -24,13 +24,12 @@ app.use(PrimeVue, {
 })
 app.use(ToastService)
 
-// Validar token ao iniciar a aplicação
-const authStore = useAuthStore()
-if (authStore.token) {
-  authStore.fetchUser().catch(() => {
-    // Se falhar, token é inválido - será limpo pelo fetchUser
-  })
+// Validar token ao iniciar a aplicação antes de montar o app
+async function initApp() {
+  const authStore = useAuthStore()
+  await authStore.initializeAuth()
+  app.mount('#app')
 }
 
-app.mount('#app')
+initApp()
 

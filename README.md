@@ -248,11 +248,29 @@ Após todos os passos, acesse:
 
 ## 💾 Como Importar o Banco de Dados
 
-Você tem duas opções para configurar o banco de dados:
+Você tem três opções para configurar o banco de dados:
 
-### Opção 1: Usar Migrations e Seeders (Recomendado)
+### Opção 1: Inicialização Automática com backup.sql (Recomendado para novos ambientes)
 
-Esta é a forma padrão e recomendada:
+O projeto está configurado para executar automaticamente o arquivo `backend/database/init/backup.sql` quando o container MySQL é criado pela primeira vez.
+
+**Como usar:**
+
+1. Coloque seu arquivo de dump SQL em `backend/database/init/backup.sql`
+2. Execute `docker-compose up -d` pela primeira vez
+3. O banco de dados será criado e populado automaticamente
+
+**Importante:**
+- O script SQL só é executado na **primeira inicialização** do container (quando o volume está vazio)
+- Se você já tem dados no banco, será necessário remover o volume primeiro:
+  ```bash
+  docker-compose down -v  # Remove containers e volumes
+  docker-compose up -d    # Recria tudo do zero
+  ```
+
+### Opção 2: Usar Migrations e Seeders
+
+Esta é a forma padrão para desenvolvimento:
 
 ```bash
 # Execute as migrations para criar as tabelas
@@ -270,7 +288,7 @@ Os seeders criam:
 - Roles e permissões básicas
 - Dados de exemplo (se configurados)
 
-### Opção 2: Importar Dump SQL
+### Opção 3: Importar Dump SQL Manualmente
 
 Se você possui um arquivo `.sql` com dump do banco de dados:
 

@@ -15,7 +15,7 @@
       </div>
 
       <div class="navbar-actions">
-        <template v-if="authStore.isAuthenticated && authStore.user">
+        <template v-if="!authStore.isLoading && authStore.isAuthenticated && authStore.user && authStore.user.name">
           <router-link to="/settings" class="user-info-link">
             <span class="user-info">
               {{ authStore.user.name }}
@@ -29,7 +29,7 @@
             @click="handleLogout"
           />
         </template>
-        <template v-else>
+        <template v-else-if="!authStore.isLoading">
           <Button
             label="Login"
             icon="pi pi-sign-in"

@@ -4,7 +4,8 @@ import api from '@/composables/useApi'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref(null)
-  const token = ref(localStorage.getItem('token') || null)
+  const token = ref(null) // Não carregar do localStorage aqui - será validado no main.js
+  const isLoading = ref(false) // Flag para controlar carregamento inicial
 
   // Usuário só está autenticado se tiver token E usuário carregado
   const isAuthenticated = computed(() => !!token.value && !!user.value)
@@ -52,19 +53,51 @@ export const useAuthStore = defineStore('auth', () => {
       return { success: true }
     } catch (error) {
       console.error('Erro ao buscar usuário:', error)
-      logout()
+      // Limpar token e usuário se a requisição falhar
+      token.value = null
+      user.value = null
+      localStorage.removeItem('token')
       return { success: false }
+    }
+  }
+
+  // Função para inicializar autenticação a partir do localStorage
+  async function initializeAuth() {
+    const storedToken = localStorage.getItem('token')
+    if (!storedToken) {
+      return
+    }
+
+    isLoading.value = true
+    token.value = storedToken
+    
+    try {
+      const result = await fetchUser()
+      if (!result.success) {
+        // Se falhar, limpar tudo
+        token.value = null
+        localStorage.removeItem('token')
+      }
+    } catch (error) {
+      // Se houver erro, limpar tudo
+      token.value = null
+      user.value = null
+      localStorage.removeItem('token')
+    } finally {
+      isLoading.value = false
     }
   }
 
   return {
     user,
     token,
+    isLoading,
     isAuthenticated,
     isAdmin,
     login,
     logout,
-    fetchUser
+    fetchUser,
+    initializeAuth
   }
 })
 
