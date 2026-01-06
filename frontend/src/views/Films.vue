@@ -448,7 +448,7 @@ async function handleSearch() {
   await filmStore.searchMovies(searchInput.value.trim())
 }
 
-function handleClear() {
+async function handleClear() {
   searchInput.value = ''
   filmStore.clearSearch()
   hoveredMovie.value = null
@@ -456,6 +456,8 @@ function handleClear() {
   clickedView.value = {}
   movieCast.value = {}
   movieInfo.value = {}
+  // Recarregar filmes iniciais (mesmo comportamento do onMounted)
+  await filmStore.discoverMovies({ genre: null, year: null }, 1, 'popularity.desc')
 }
 
 function handleFilterChange() {
@@ -503,11 +505,14 @@ function handleApplySort() {
   sortModalVisible.value = false
 }
 
-function handleClearFilters() {
+async function handleClearFilters() {
   selectedGenre.value = null
   selectedYear.value = null
   filmStore.clearFilters()
   filmStore.clearSearch()
+  // Recarregar filmes iniciais (mesmo comportamento do onMounted)
+  await filmStore.discoverMovies({ genre: null, year: null }, 1, 'popularity.desc')
+  filtersModalVisible.value = false
 }
 
 function handleMouseEnter(movie) {
