@@ -53,11 +53,16 @@ export const useAuthStore = defineStore('auth', () => {
       return { success: true }
     } catch (error) {
       console.error('Erro ao buscar usuário:', error)
-      // Limpar token e usuário se a requisição falhar
-      token.value = null
-      user.value = null
-      localStorage.removeItem('token')
-      return { success: false }
+      // Só limpar token se for erro 401 (não autorizado)
+      // Para erros de rede ou outros, manter o token
+      if (error.response?.status === 401) {
+        token.value = null
+        user.value = null
+        localStorage.removeItem('token')
+        return { success: false, isAuthError: true }
+      }
+      // Para outros erros, não limpar o token (pode ser erro de rede)
+      return { success: false, isAuthError: false }
     }
   }
 
@@ -82,13 +87,20 @@ export const useAuthStore = defineStore('auth', () => {
     
     try {
       const result = await fetchUser()
-      if (!result.success) {
-        // Se falhar, limpar tudo
+      // Só limpar se for erro de autenticação (401)
+      if (!result.success && result.isAuthError) {
         clearAuth()
       }
+      // Se sucesso, o token e usuário já estão definidos
+      // Se falhou mas não é erro de auth, manter o token (pode ser erro de rede)
     } catch (error) {
-      // Se houver erro (incluindo 401), limpar tudo
-      clearAuth()
+      // Se houver erro não capturado, verificar se é 401
+      if (error.response?.status === 401) {
+        clearAuth()
+      } else {
+        // Para outros erros (rede, etc), manter o token
+        console.error('Erro ao inicializar autenticação:', error)
+      }
     } finally {
       isLoading.value = false
     }
