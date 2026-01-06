@@ -49,7 +49,6 @@
 </template>
 
 <script setup>
-import { watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useFavoriteStore } from '@/stores/favorite'
@@ -58,18 +57,6 @@ import Button from 'primevue/button'
 const router = useRouter()
 const authStore = useAuthStore()
 const favoriteStore = useFavoriteStore()
-
-// Monitorar estado inconsistente: token sem usuário
-watch(
-  () => [authStore.token, authStore.user, authStore.isLoading],
-  ([token, user, isLoading]) => {
-    // Se tem token mas não tem usuário e não está carregando, limpar
-    if (token && !user && !isLoading) {
-      authStore.clearAuth()
-    }
-  },
-  { immediate: true }
-)
 
 async function handleLogout() {
   await authStore.logout()
