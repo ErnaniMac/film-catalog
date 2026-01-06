@@ -32,7 +32,7 @@ class ResetPasswordEmail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Redefinição de Senha - Catálogo de Filmes',
+            subject: 'Redefinição de Senha - Cine Catálogo',
         );
     }
 

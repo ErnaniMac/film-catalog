@@ -32,7 +32,7 @@ class WelcomeEmail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Bem-vindo ao Catálogo de Filmes - Verifique seu e-mail',
+            subject: 'Bem-vindo ao Cine Catálogo - Verifique seu e-mail',
         );
     }
 
