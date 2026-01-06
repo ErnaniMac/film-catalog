@@ -1,4 +1,4 @@
-# Film Catalog
+# Cine Catálogo
 
 Projeto full-stack de catálogo de filmes desenvolvido com Laravel (backend) e Vue.js 3 (frontend), integrado com a API do TMDB (The Movie Database).
 
@@ -100,7 +100,7 @@ cp backend/.env.example backend/.env
 Edite o arquivo `backend/.env` e configure as seguintes variáveis:
 
 ```env
-APP_NAME="Film Catalog"
+APP_NAME="Cine Catálogo"
 APP_ENV=local
 APP_KEY=  # Será gerado no próximo passo
 APP_DEBUG=true
@@ -147,7 +147,7 @@ cp frontend/.env.example frontend/.env
 Edite o arquivo `frontend/.env`:
 
 ```env
-VITE_APP_NAME="Film Catalog"
+VITE_APP_NAME="Cine Catálogo"
 VITE_API_URL=http://localhost:8000/api
 ```
 
@@ -560,7 +560,7 @@ Após executar `php artisan db:seed`, você terá:
    - Clique em **"Request an API Key"** ou **"Create"**
    - Selecione **"Developer"** como tipo de uso
    - Preencha o formulário:
-     - **Application Name**: Film Catalog (ou qualquer nome)
+     - **Application Name**: Cine Catálogo (ou qualquer nome)
      - **Application URL**: http://localhost:8000 (para desenvolvimento)
      - **Application Summary**: Descreva brevemente seu projeto
    - Aceite os termos de uso
@@ -607,7 +607,7 @@ Para habilitar login e cadastro com Google, você precisa configurar as credenci
 2. **Crie um novo projeto ou selecione um existente**:
    - Clique em "Selecionar projeto" no topo
    - Clique em "Novo Projeto"
-   - Dê um nome ao projeto (ex: "Film Catalog")
+   - Dê um nome ao projeto (ex: "Cine Catálogo")
    - Clique em "Criar"
 
 3. **Ative a API do Google+**:
@@ -620,7 +620,7 @@ Para habilitar login e cadastro com Google, você precisa configurar as credenci
    - Clique em "Criar credenciais" > "ID do cliente OAuth"
    - Selecione "Aplicativo da Web"
    - Configure:
-     - **Nome**: Film Catalog (ou qualquer nome)
+     - **Nome**: Cine Catálogo (ou qualquer nome)
      - **URIs de redirecionamento autorizados**: 
        - `http://localhost:8000/api/auth/google/callback` (desenvolvimento)
        - `https://seudominio.com/api/auth/google/callback` (produção)
