@@ -25,10 +25,10 @@ Edite `backend/.env` e configure:
 # TMDB API
 TMDB_API_KEY=sua_chave_api_tmdb_aqui
 
-# Servidor de e-mail
+# Servidor de e-mail (Opcional)
 RESEND_KEY=sua_api_resend_aqui
 
-# Google OAuth
+# Google OAuth (Opcional)
 GOOGLE_CLIENT_ID=seu_client_id_aqui
 GOOGLE_CLIENT_SECRET=seu_client_secret_aqui
 GOOGLE_REDIRECT_URI=http://localhost:8000/api/auth/google/callback
