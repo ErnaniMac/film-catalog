@@ -4,7 +4,7 @@
       <h1>Encontre seus filmes favoritos</h1>
     </div>
 
-    <div class="search-section">
+    <div v-if="!isInitialLoading" class="search-section">
       <div class="search-container">
         <div class="search-box">
           <InputText
@@ -156,12 +156,13 @@
       </template>
     </Dialog>
 
-    <div v-if="filmStore.loading" class="loading">
+    <div v-if="isInitialLoading || filmStore.loading" class="loading">
       <ProgressSpinner />
-      <p>Buscando filmes...</p>
+      <p>{{ isInitialLoading ? 'Carregando filmes...' : 'Buscando filmes...' }}</p>
     </div>
 
-    <TransitionGroup v-else-if="filmStore.movies.length > 0" name="fade" tag="div" class="movies-grid">
+    <template v-else>
+      <TransitionGroup v-if="filmStore.movies.length > 0" name="fade" tag="div" class="movies-grid">
       <div
         v-for="movie in displayedMovies"
         :key="movie.id"
@@ -317,28 +318,29 @@
       </div>
     </TransitionGroup>
 
-    <div v-else-if="filmStore.searchQuery && !filmStore.loading" class="no-results">
-      <p>Nenhum filme encontrado para "{{ filmStore.searchQuery }}"</p>
-    </div>
+      <div v-else-if="filmStore.searchQuery && !filmStore.loading" class="no-results">
+        <p>Nenhum filme encontrado para "{{ filmStore.searchQuery }}"</p>
+      </div>
 
-    <div v-if="filmStore.movies.length > 0" class="pagination">
-      <Button
-        label="Anterior"
-        icon="pi pi-chevron-left"
-        :disabled="filmStore.currentPage === 1"
-        @click="goToPage(filmStore.currentPage - 1)"
-      />
-      <span class="page-info">
-        Página {{ filmStore.currentPage }} de {{ filmStore.totalPages }}
-      </span>
-      <Button
-        label="Próxima"
-        icon="pi pi-chevron-right"
-        iconPos="right"
-        :disabled="filmStore.currentPage >= filmStore.totalPages"
-        @click="goToPage(filmStore.currentPage + 1)"
-      />
-    </div>
+      <div v-if="filmStore.movies.length > 0" class="pagination">
+        <Button
+          label="Anterior"
+          icon="pi pi-chevron-left"
+          :disabled="filmStore.currentPage === 1"
+          @click="goToPage(filmStore.currentPage - 1)"
+        />
+        <span class="page-info">
+          Página {{ filmStore.currentPage }} de {{ filmStore.totalPages }}
+        </span>
+        <Button
+          label="Próxima"
+          icon="pi pi-chevron-right"
+          iconPos="right"
+          :disabled="filmStore.currentPage >= filmStore.totalPages"
+          @click="goToPage(filmStore.currentPage + 1)"
+        />
+      </div>
+    </template>
   </div>
 </template>
 
@@ -371,6 +373,7 @@ const movieCast = ref({})
 const movieInfo = ref({})
 const loadingCast = ref({})
 const loadingInfo = ref({})
+const isInitialLoading = ref(true) // Loading inicial da página
 
 // Filtros
 const filtersModalVisible = ref(false)
@@ -428,13 +431,18 @@ const displayedMovies = computed(() => {
 })
 
 onMounted(async () => {
-  // Só buscar favoritos se o usuário estiver autenticado
-  if (authStore.isAuthenticated) {
-    favoriteStore.fetchFavorites()
+  isInitialLoading.value = true
+  try {
+    // Só buscar favoritos se o usuário estiver autenticado
+    if (authStore.isAuthenticated) {
+      favoriteStore.fetchFavorites()
+    }
+    await filmStore.fetchGenres()
+    // Carregar todos os filmes ao iniciar
+    await filmStore.discoverMovies({ genre: null, year: null }, 1, 'popularity.desc')
+  } finally {
+    isInitialLoading.value = false
   }
-  filmStore.fetchGenres()
-  // Carregar todos os filmes ao iniciar
-  await filmStore.discoverMovies({ genre: null, year: null }, 1, 'popularity.desc')
 })
 
 async function handleSearch() {
