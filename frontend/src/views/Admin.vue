@@ -645,4 +645,29 @@ async function executeDelete() {
   color: #999;
   font-style: italic;
 }
+
+/* Estilos para TabView e tabelas */
+:deep(.p-tabview) {
+  width: 100%;
+}
+
+:deep(.p-tabview .p-tabview-panels) {
+  padding: 1.5rem;
+  min-height: 500px;
+}
+
+:deep(.p-tabview .p-tabview-panel) {
+  width: 100%;
+}
+
+/* Tamanho padrão grande para todas as tabelas */
+:deep(.p-datatable) {
+  width: 100%;
+  min-width: 1200px;
+}
+
+:deep(.p-datatable-wrapper) {
+  width: 100%;
+  overflow-x: auto;
+}
 </style>
