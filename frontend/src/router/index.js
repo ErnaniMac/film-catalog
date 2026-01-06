@@ -72,10 +72,18 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
   
+  // Aguardar a inicialização completar se ainda estiver em andamento
+  if (authStore.isLoading) {
+    // Aguardar até a inicialização completar
+    while (authStore.isLoading) {
+      await new Promise(resolve => setTimeout(resolve, 50))
+    }
+  }
+  
   // Se está tentando acessar login ou register, sempre permitir (mesmo com token inválido)
   if (to.name === 'login' || to.name === 'register') {
-    // Se tem token mas não tem usuário, limpar antes de permitir acesso
-    if (authStore.token && !authStore.user) {
+    // Se tem token mas não tem usuário e não está carregando, limpar antes de permitir acesso
+    if (authStore.token && !authStore.user && !authStore.isLoading) {
       authStore.clearAuth()
     }
     next()
@@ -83,6 +91,7 @@ router.beforeEach(async (to, from, next) => {
   }
   
   // Se tem token mas não tem usuário, validar token buscando usuário
+  // Só fazer isso se não estiver carregando (para evitar durante a inicialização)
   if (authStore.token && !authStore.user && !authStore.isLoading) {
     try {
       const result = await authStore.fetchUser()
