@@ -231,13 +231,6 @@ class TmdbController extends Controller
             'sort_by' => $sortBy,
         ];
         
-        // Log para debug
-        Log::info('TMDB Discover - Sort By', [
-            'request_sort_by' => $request->get('sort_by'),
-            'validated_sort_by' => $sortBy,
-            'params' => $params
-        ]);
-
         if ($request->has('with_genres') && $request->get('with_genres')) {
             $params['with_genres'] = $request->get('with_genres');
         }
