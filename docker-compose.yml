@@ -63,12 +63,12 @@ services:
       GID: ${HOST_GID:-1000}
     command: >
       sh -c "
+        if [ ! -d vendor ]; then
+          composer install --no-interaction
+        fi &&
         if ! grep -q 'APP_KEY=base64:' /var/www/html/.env 2>/dev/null; then
           echo 'Gerando APP_KEY...' &&
           php artisan key:generate --no-interaction || true
-        fi &&
-        if [ ! -d vendor ]; then
-          composer install --no-interaction
         fi &&
         php-fpm
       "
