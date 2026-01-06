@@ -10,8 +10,8 @@
 
       <div class="navbar-menu">
         <router-link to="/films" class="nav-link">Filmes</router-link>
-        <router-link v-if="authStore.isAuthenticated && authStore.user" to="/favorites" class="nav-link">Favoritos</router-link>
-        <router-link v-if="authStore.isAdmin" to="/admin" class="nav-link">Admin</router-link>
+        <router-link v-if="!authStore.isLoading && authStore.isAuthenticated && authStore.user && authStore.user.name" to="/favorites" class="nav-link">Favoritos</router-link>
+        <router-link v-if="!authStore.isLoading && authStore.isAdmin" to="/admin" class="nav-link">Admin</router-link>
       </div>
 
       <div class="navbar-actions">
@@ -35,12 +35,12 @@
             icon="pi pi-sign-in"
             severity="secondary"
             outlined
-            @click="router.push('/login')"
+            @click="handleLoginClick"
           />
           <Button
             label="Criar Conta"
             icon="pi pi-user-plus"
-            @click="router.push('/register')"
+            @click="handleRegisterClick"
           />
         </template>
       </div>
@@ -49,6 +49,7 @@
 </template>
 
 <script setup>
+import { watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useFavoriteStore } from '@/stores/favorite'
@@ -58,6 +59,18 @@ const router = useRouter()
 const authStore = useAuthStore()
 const favoriteStore = useFavoriteStore()
 
+// Monitorar estado inconsistente: token sem usuário
+watch(
+  () => [authStore.token, authStore.user, authStore.isLoading],
+  ([token, user, isLoading]) => {
+    // Se tem token mas não tem usuário e não está carregando, limpar
+    if (token && !user && !isLoading) {
+      authStore.clearAuth()
+    }
+  },
+  { immediate: true }
+)
+
 async function handleLogout() {
   await authStore.logout()
   favoriteStore.clearFavorites()
@@ -65,6 +78,40 @@ async function handleLogout() {
     // Recarregar a página para garantir que os favoritos sejam atualizados
     window.location.reload()
   })
+}
+
+function handleLoginClick() {
+  // Garantir que o estado está limpo antes de navegar
+  if (authStore.token && !authStore.user) {
+    authStore.clearAuth()
+  }
+  // Forçar navegação mesmo se houver problemas
+  try {
+    router.push('/login').catch((err) => {
+      console.error('Erro ao navegar para login:', err)
+      window.location.href = '/login'
+    })
+  } catch (error) {
+    console.error('Erro ao navegar para login:', error)
+    window.location.href = '/login'
+  }
+}
+
+function handleRegisterClick() {
+  // Garantir que o estado está limpo antes de navegar
+  if (authStore.token && !authStore.user) {
+    authStore.clearAuth()
+  }
+  // Forçar navegação mesmo se houver problemas
+  try {
+    router.push('/register').catch((err) => {
+      console.error('Erro ao navegar para registro:', err)
+      window.location.href = '/register'
+    })
+  } catch (error) {
+    console.error('Erro ao navegar para registro:', error)
+    window.location.href = '/register'
+  }
 }
 </script>
 
