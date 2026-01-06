@@ -16,8 +16,13 @@ export const useFavoriteStore = defineStore('favorite', () => {
       const response = await api.get('/favorites', { params })
       favorites.value = response.data.data || []
     } catch (error) {
-      console.error('Erro ao buscar favoritos:', error)
-      favorites.value = []
+      // Se for erro 401, limpar favoritos
+      if (error.response?.status === 401) {
+        clearFavorites()
+      } else {
+        console.error('Erro ao buscar favoritos:', error)
+        favorites.value = []
+      }
     } finally {
       loading.value = false
     }

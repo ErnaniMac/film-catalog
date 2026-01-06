@@ -12,6 +12,7 @@
             placeholder="Digite o nome do filme..."
             @keyup.enter="handleSearch"
             class="search-input"
+            :autofocus="false"
           />
           <Button
             label="Buscar"
@@ -51,6 +52,7 @@
       :modal="true"
       :style="{ width: '600px' }"
       :autoFocus="false"
+      :focusOnShow="false"
       :closable="true"
       :dismissableMask="true"
       class="filters-modal"
@@ -111,6 +113,7 @@
       :modal="true"
       :style="{ width: '500px' }"
       :autoFocus="false"
+      :focusOnShow="false"
       :closable="true"
       :dismissableMask="true"
       class="sort-modal"
@@ -598,51 +601,68 @@ async function loadInfo(movieId) {
 }
 
 async function toggleFavorite(movie) {
-  // Verificar se o usuário está autenticado
-  if (!authStore.isAuthenticated || !authStore.user) {
+  // Verificar se o usuário está autenticado e tem token válido
+  if (!authStore.isAuthenticated || !authStore.user || !authStore.token) {
+    // Limpar qualquer estado inconsistente
+    authStore.clearAuth()
     router.push('/login')
     return
   }
 
-  if (favoriteStore.isFavorite(movie.id)) {
-    // Remover dos favoritos
-    const favoriteId = favoriteStore.getFavoriteId(movie.id)
-    if (!favoriteId) return
+  try {
+    if (favoriteStore.isFavorite(movie.id)) {
+      // Remover dos favoritos
+      const favoriteId = favoriteStore.getFavoriteId(movie.id)
+      if (!favoriteId) return
 
-    const result = await favoriteStore.removeFavorite(favoriteId)
-    if (result.success) {
-      toast.add({
-        severity: 'success',
-        summary: 'Sucesso',
-        detail: 'Filme removido dos favoritos!',
-        life: 3000
-      })
+      const result = await favoriteStore.removeFavorite(favoriteId)
+      if (result.success) {
+        toast.add({
+          severity: 'success',
+          summary: 'Sucesso',
+          detail: 'Filme removido dos favoritos!',
+          life: 3000
+        })
+      } else {
+        toast.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: result.error || 'Erro ao remover dos favoritos',
+          life: 3000
+        })
+      }
     } else {
-      toast.add({
-        severity: 'error',
-        summary: 'Erro',
-        detail: result.error || 'Erro ao remover dos favoritos',
-        life: 3000
-      })
+      // Adicionar aos favoritos
+      const result = await favoriteStore.addFavorite(movie)
+      if (result.success) {
+        toast.add({
+          severity: 'success',
+          summary: 'Sucesso',
+          detail: 'Filme adicionado aos favoritos!',
+          life: 3000
+        })
+      } else {
+        toast.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: result.error || 'Erro ao adicionar aos favoritos',
+          life: 3000
+        })
+      }
     }
-  } else {
-    // Adicionar aos favoritos
-    const result = await favoriteStore.addFavorite(movie)
-    if (result.success) {
-      toast.add({
-        severity: 'success',
-        summary: 'Sucesso',
-        detail: 'Filme adicionado aos favoritos!',
-        life: 3000
-      })
-    } else {
-      toast.add({
-        severity: 'error',
-        summary: 'Erro',
-        detail: result.error || 'Erro ao adicionar aos favoritos',
-        life: 3000
-      })
+  } catch (error) {
+    // Se for erro 401, limpar autenticação e redirecionar
+    if (error.response?.status === 401 || error?.status === 401) {
+      authStore.clearAuth()
+      router.push('/login')
+      return
     }
+    toast.add({
+      severity: 'error',
+      summary: 'Erro',
+      detail: 'Erro ao processar favorito',
+      life: 3000
+    })
   }
 }
 
