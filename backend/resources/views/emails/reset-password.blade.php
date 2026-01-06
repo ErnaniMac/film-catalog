@@ -7,7 +7,7 @@
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
     <div style="background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
-        <h1 style="color: white; margin: 0;">Catálogo de Filmes</h1>
+        <h1 style="color: white; margin: 0;">Cine Catálogo</h1>
     </div>
     
     <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px;">
@@ -36,7 +36,7 @@
     </div>
     
     <div style="text-align: center; margin-top: 20px; color: #999; font-size: 12px;">
-        <p>© {{ date('Y') }} Catálogo de Filmes. Todos os direitos reservados.</p>
+        <p>© {{ date('Y') }} Cine Catálogo. Todos os direitos reservados.</p>
     </div>
 </body>
 </html>

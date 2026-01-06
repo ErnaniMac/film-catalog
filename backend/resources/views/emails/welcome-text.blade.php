@@ -1,8 +1,8 @@
-Bem-vindo ao Catálogo de Filmes!
+Bem-vindo ao Cine Catálogo!
 
 Olá {{ $user->name }},
 
-Obrigado por se cadastrar no Catálogo de Filmes. Estamos felizes em tê-lo conosco!
+Obrigado por se cadastrar no Cine Catálogo. Estamos felizes em tê-lo conosco!
 
 Para começar a usar sua conta, por favor, verifique seu endereço de e-mail acessando o seguinte link:
 
@@ -11,4 +11,4 @@ Para começar a usar sua conta, por favor, verifique seu endereço de e-mail ace
 Este link expira em 24 horas. Se você não criou esta conta, pode ignorar este e-mail.
 
 Atenciosamente,
-Equipe Catálogo de Filmes
+Equipe Cine Catálogo

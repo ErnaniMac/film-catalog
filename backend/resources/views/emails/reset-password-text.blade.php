@@ -1,4 +1,4 @@
-Redefinição de Senha - Catálogo de Filmes
+Redefinição de Senha - Cine Catálogo
 
 Olá {{ $user->name }},
 
@@ -11,4 +11,4 @@ Para redefinir sua senha, acesse o seguinte link:
 Este link expira em 60 minutos. Se você não solicitou a redefinição de senha, pode ignorar este e-mail.
 
 Atenciosamente,
-Equipe Catálogo de Filmes
+Equipe Cine Catálogo
