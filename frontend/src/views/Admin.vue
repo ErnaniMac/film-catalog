@@ -76,7 +76,6 @@
 
         <div v-if="!rolesLoading && adminStore.roles.length === 0" class="no-data">
           <p>Nenhuma role encontrada.</p>
-          <p class="debug-info">Debug: roles.length = {{ adminStore.roles.length }}</p>
         </div>
 
         <DataTable
@@ -140,7 +139,6 @@
 
         <div v-if="!permissionsLoading && adminStore.permissions.length === 0" class="no-data">
           <p>Nenhuma permissão encontrada.</p>
-          <p class="debug-info">Debug: permissions.length = {{ adminStore.permissions.length }}</p>
         </div>
 
         <DataTable
@@ -633,12 +631,6 @@ async function executeDelete() {
   text-align: center;
   padding: 4rem;
   color: #666;
-}
-
-.debug-info {
-  font-size: 0.85rem;
-  color: #999;
-  margin-top: 0.5rem;
 }
 
 .no-permissions {
