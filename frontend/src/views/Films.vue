@@ -758,20 +758,19 @@ function formatVoteCount(count) {
   display: flex;
   gap: 1rem;
   align-items: center;
-  width: 100%;
+  width: auto;
 }
 
 .filters-button-section {
   display: flex;
   gap: 1rem;
   justify-content: flex-end;
-  width: 100%;
+  width: auto;
 }
 
 .search-input {
   width: 300px;
   max-width: 300px;
-  flex: 1;
 }
 
 /* Estilos da Modal de Filtros */
@@ -1116,8 +1115,14 @@ function formatVoteCount(count) {
     height: 500px;
   }
 
+  .search-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
   .search-box {
     flex-wrap: wrap;
+    width: 100%;
   }
 
   .search-input {
@@ -1127,6 +1132,7 @@ function formatVoteCount(count) {
 
   .filters-button-section {
     flex-wrap: wrap;
+    width: 100%;
   }
 
   .filters-button-section :deep(.p-button) {
