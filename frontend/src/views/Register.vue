@@ -314,5 +314,41 @@ async function handleGoogleAuth() {
 .google-button {
   margin-top: 0;
 }
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .register-container {
+    padding: 1.5rem;
+  }
+
+  .register-card {
+    padding: 2rem;
+    max-width: 500px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .register-container {
+    padding: 1rem;
+  }
+
+  .register-card {
+    padding: 1.5rem;
+    max-width: 100%;
+  }
+
+  .register-card h1 {
+    font-size: 1.5rem;
+  }
+
+  .register-card p {
+    font-size: 0.9rem;
+  }
+
+  .login-link {
+    font-size: 0.9rem;
+  }
+}
 </style>
 

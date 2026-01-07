@@ -662,4 +662,155 @@ async function executeDelete() {
   width: 100%;
   overflow-x: auto;
 }
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .admin-container {
+    padding: 1.5rem;
+  }
+
+  .header h1 {
+    font-size: 2rem;
+  }
+
+  .table-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .table-header :deep(.p-button) {
+    width: 100%;
+  }
+
+  :deep(.p-datatable) {
+    min-width: 800px;
+  }
+
+  :deep(.p-dialog) {
+    width: 90% !important;
+    max-width: 600px;
+  }
+
+  .form-field {
+    margin-bottom: 1rem;
+  }
+
+  .dialog-actions {
+    flex-direction: column;
+  }
+
+  .dialog-actions :deep(.p-button) {
+    width: 100%;
+  }
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .admin-container {
+    padding: 1rem;
+  }
+
+  .header {
+    margin-bottom: 1.5rem;
+  }
+
+  .header h1 {
+    font-size: 1.75rem;
+  }
+
+  .header p {
+    font-size: 0.9rem;
+  }
+
+  .table-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .table-header h2 {
+    font-size: 1.25rem;
+  }
+
+  .table-header :deep(.p-button) {
+    width: 100%;
+  }
+
+  :deep(.p-datatable) {
+    min-width: 600px;
+    font-size: 0.85rem;
+  }
+
+  :deep(.p-datatable .p-datatable-thead > tr > th) {
+    padding: 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  :deep(.p-datatable .p-datatable-tbody > tr > td) {
+    padding: 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .role-badge,
+  .permission-badge {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.4rem;
+    margin-right: 0.25rem;
+    margin-bottom: 0.25rem;
+  }
+
+  :deep(.p-tabview .p-tabview-nav) {
+    flex-wrap: wrap;
+  }
+
+  :deep(.p-tabview .p-tabview-nav li .p-tabview-nav-link) {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  :deep(.p-tabview .p-tabview-panels) {
+    padding: 1rem;
+    min-height: 400px;
+  }
+
+  :deep(.p-dialog) {
+    width: 95% !important;
+    max-width: none;
+  }
+
+  :deep(.p-dialog-header) {
+    padding: 1rem;
+  }
+
+  :deep(.p-dialog-title) {
+    font-size: 1.25rem;
+  }
+
+  :deep(.p-dialog-content) {
+    padding: 1rem;
+  }
+
+  .form-field {
+    margin-bottom: 1rem;
+  }
+
+  .form-field label {
+    font-size: 0.9rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .dialog-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .dialog-actions :deep(.p-button) {
+    width: 100%;
+  }
+
+  :deep(.p-multiselect) {
+    width: 100%;
+  }
+}
 </style>

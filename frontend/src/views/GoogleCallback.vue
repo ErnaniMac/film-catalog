@@ -123,5 +123,45 @@ onMounted(async () => {
 .success-message p {
   color: #666;
 }
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .callback-container {
+    padding: 1.5rem 1rem;
+    min-height: calc(100vh - 150px);
+  }
+
+  .callback-card {
+    padding: 2rem;
+    max-width: 450px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .callback-container {
+    padding: 1rem;
+    min-height: calc(100vh - 120px);
+  }
+
+  .callback-card {
+    padding: 1.5rem;
+    max-width: 100%;
+  }
+
+  .error-message h2,
+  .success-message h2 {
+    font-size: 1.25rem;
+  }
+
+  .error-message p,
+  .success-message p {
+    font-size: 0.9rem;
+  }
+
+  .error-message :deep(.p-button) {
+    width: 100%;
+  }
+}
 </style>
 

@@ -233,5 +233,50 @@ async function handleGoogleAuth() {
 .google-button {
   margin-top: 0;
 }
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .login-container {
+    padding: 1.5rem 1rem;
+    min-height: calc(100vh - 150px);
+  }
+
+  .login-card {
+    padding: 2rem;
+    max-width: 450px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .login-container {
+    padding: 1rem;
+    min-height: calc(100vh - 120px);
+  }
+
+  .login-card {
+    padding: 1.5rem;
+    max-width: 100%;
+  }
+
+  .login-card h1 {
+    font-size: 1.5rem;
+  }
+
+  .login-card p {
+    font-size: 0.9rem;
+  }
+
+  .links p {
+    font-size: 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .links a {
+    display: inline-block;
+  }
+}
 </style>
 

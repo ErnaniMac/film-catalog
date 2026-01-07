@@ -118,5 +118,48 @@ onMounted(async () => {
 .error-state p {
   color: #666;
 }
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .verify-email-container {
+    padding: 1.5rem;
+  }
+
+  .verify-email-card {
+    padding: 2rem;
+    max-width: 450px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .verify-email-container {
+    padding: 1rem;
+  }
+
+  .verify-email-card {
+    padding: 1.5rem;
+    max-width: 100%;
+  }
+
+  .verify-email-card i {
+    font-size: 3rem !important;
+  }
+
+  .success-state h1,
+  .error-state h1 {
+    font-size: 1.5rem;
+  }
+
+  .success-state p,
+  .error-state p {
+    font-size: 0.9rem;
+  }
+
+  .success-state :deep(.p-button),
+  .error-state :deep(.p-button) {
+    width: 100%;
+  }
+}
 </style>
 

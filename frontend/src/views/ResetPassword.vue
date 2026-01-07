@@ -222,5 +222,37 @@ async function handleResetPassword() {
 .login-link a:hover {
   text-decoration: underline;
 }
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .reset-password-container {
+    padding: 1.5rem;
+  }
+
+  .reset-password-card {
+    padding: 2rem;
+    max-width: 450px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .reset-password-container {
+    padding: 1rem;
+  }
+
+  .reset-password-card {
+    padding: 1.5rem;
+    max-width: 100%;
+  }
+
+  .reset-password-card h1 {
+    font-size: 1.5rem;
+  }
+
+  .reset-password-card p {
+    font-size: 0.9rem;
+  }
+}
 </style>
 

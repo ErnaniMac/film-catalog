@@ -174,5 +174,37 @@ async function handleSendResetLink() {
 .login-link a:hover {
   text-decoration: underline;
 }
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .forgot-password-container {
+    padding: 1.5rem;
+  }
+
+  .forgot-password-card {
+    padding: 2rem;
+    max-width: 450px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .forgot-password-container {
+    padding: 1rem;
+  }
+
+  .forgot-password-card {
+    padding: 1.5rem;
+    max-width: 100%;
+  }
+
+  .forgot-password-card h1 {
+    font-size: 1.5rem;
+  }
+
+  .forgot-password-card p {
+    font-size: 0.9rem;
+  }
+}
 </style>
 

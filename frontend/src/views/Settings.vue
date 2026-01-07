@@ -426,5 +426,83 @@ async function handleLogout() {
   padding: 4rem;
   color: #666;
 }
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .settings-container {
+    padding: 1.5rem;
+  }
+
+  .header h1 {
+    font-size: 1.75rem;
+  }
+
+  .settings-card {
+    padding: 1.5rem;
+  }
+
+  .info-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  :deep(.p-dialog) {
+    width: 90% !important;
+    max-width: 500px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .settings-container {
+    padding: 1rem;
+  }
+
+  .header {
+    margin-bottom: 1.5rem;
+  }
+
+  .header h1 {
+    font-size: 1.5rem;
+  }
+
+  .settings-card {
+    padding: 1rem;
+  }
+
+  .settings-card h2 {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+  }
+
+  .info-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.75rem 0;
+  }
+
+  .info-item label {
+    font-size: 0.9rem;
+  }
+
+  .info-item span {
+    font-size: 0.95rem;
+  }
+
+  .actions :deep(.p-button) {
+    width: 100%;
+  }
+
+  :deep(.p-dialog) {
+    width: 95% !important;
+    max-width: none;
+  }
+
+  .form-group {
+    margin-bottom: 1rem;
+  }
+}
 </style>
 

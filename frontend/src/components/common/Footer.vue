@@ -32,5 +32,26 @@ const currentYear = computed(() => new Date().getFullYear())
   color: #666;
   font-size: 0.9rem;
 }
+
+/* Tablet e Mobile */
+@media (max-width: 1024px) {
+  .footer-content {
+    padding: 0 1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .footer {
+    padding: 1rem 0;
+  }
+
+  .footer-content {
+    padding: 0 1rem;
+  }
+
+  .footer-content p {
+    font-size: 0.85rem;
+  }
+}
 </style>
 

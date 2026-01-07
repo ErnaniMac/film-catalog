@@ -8,15 +8,19 @@
         </router-link>
       </div>
 
-      <div class="navbar-menu">
-        <router-link to="/films" class="nav-link">Filmes</router-link>
-        <router-link v-if="!authStore.isLoading && authStore.isAuthenticated && authStore.user && authStore.user.name" to="/favorites" class="nav-link">Favoritos</router-link>
-        <router-link v-if="!authStore.isLoading && authStore.isAdmin" to="/admin" class="nav-link">Admin</router-link>
+      <button class="mobile-menu-toggle" @click="toggleMobileMenu" aria-label="Toggle menu">
+        <i :class="mobileMenuOpen ? 'pi pi-times' : 'pi pi-bars'"></i>
+      </button>
+
+      <div class="navbar-menu" :class="{ 'mobile-open': mobileMenuOpen }">
+        <router-link to="/films" class="nav-link" @click="closeMobileMenu">Filmes</router-link>
+        <router-link v-if="!authStore.isLoading && authStore.isAuthenticated && authStore.user && authStore.user.name" to="/favorites" class="nav-link" @click="closeMobileMenu">Favoritos</router-link>
+        <router-link v-if="!authStore.isLoading && authStore.isAdmin" to="/admin" class="nav-link" @click="closeMobileMenu">Admin</router-link>
       </div>
 
-      <div class="navbar-actions">
+      <div class="navbar-actions" :class="{ 'mobile-open': mobileMenuOpen }">
         <template v-if="!authStore.isLoading && authStore.isAuthenticated && authStore.user && authStore.user.name">
-          <router-link to="/settings" class="user-info-link">
+          <router-link to="/settings" class="user-info-link" @click="closeMobileMenu">
             <span class="user-info">
               {{ authStore.user.name }}
             </span>
@@ -49,6 +53,7 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useFavoriteStore } from '@/stores/favorite'
@@ -57,6 +62,15 @@ import Button from 'primevue/button'
 const router = useRouter()
 const authStore = useAuthStore()
 const favoriteStore = useFavoriteStore()
+const mobileMenuOpen = ref(false)
+
+function toggleMobileMenu() {
+  mobileMenuOpen.value = !mobileMenuOpen.value
+}
+
+function closeMobileMenu() {
+  mobileMenuOpen.value = false
+}
 
 async function handleLogout() {
   await authStore.logout()
@@ -184,6 +198,91 @@ function handleRegisterClick() {
 .user-info {
   color: #666;
   font-weight: 500;
+}
+
+.mobile-menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #333;
+  cursor: pointer;
+  padding: 0.5rem;
+  z-index: 1001;
+}
+
+.mobile-menu-toggle i {
+  font-size: 1.5rem;
+}
+
+/* Tablet e Mobile */
+@media (max-width: 1024px) {
+  .navbar-content {
+    padding: 0 1rem;
+    flex-wrap: wrap;
+    position: relative;
+  }
+
+  .mobile-menu-toggle {
+    display: block;
+  }
+
+  .navbar-menu,
+  .navbar-actions {
+    display: none;
+    width: 100%;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e9ecef;
+  }
+
+  .navbar-menu.mobile-open,
+  .navbar-actions.mobile-open {
+    display: flex;
+  }
+
+  .navbar-menu {
+    order: 3;
+  }
+
+  .navbar-actions {
+    order: 4;
+  }
+
+  .nav-link {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    text-align: left;
+  }
+
+  .user-info-link {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    text-align: left;
+  }
+
+  .navbar-actions :deep(.p-button) {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+/* Mobile pequeno */
+@media (max-width: 640px) {
+  .navbar-brand h2 {
+    font-size: 1rem;
+  }
+
+  .brand-logo {
+    width: 24px;
+    height: 24px;
+  }
+
+  .navbar-content {
+    padding: 0.75rem 1rem;
+  }
 }
 </style>
 
