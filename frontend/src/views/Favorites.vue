@@ -19,7 +19,7 @@
       </div>
       <Button
         v-if="selectedGenre"
-        label="Limpar Filtro"
+        label="Limpar"
         icon="pi pi-times"
         severity="secondary"
         @click="clearFilter"
